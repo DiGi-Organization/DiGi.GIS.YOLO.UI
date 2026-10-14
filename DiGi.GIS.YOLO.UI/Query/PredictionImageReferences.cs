@@ -8,7 +8,7 @@ namespace DiGi.GIS.YOLO.UI
     {
         /// <summary>
         /// Lists the building references whose orthophoto images are in a prediction image folder - the buildings a detector run over that folder has scored, whether it fired on them or not.
-        /// <para>The detector's results name only the buildings it fired on, so they cannot say which buildings were looked at and found empty. The image folder can: every <c>{reference}_{year}.jpeg</c> in it was handed to the detector. The detection write needs exactly that set to clear what an earlier detector left on a building the current one does not fire on (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#21).</para>
+        /// <para>The detector's results name only the buildings it fired on, so they cannot say which buildings were looked at and found empty. The image folder can: every <c>{reference}_{year}.jpeg</c> in it was handed to the detector. The detection write needs exactly that set to clear what an earlier detector left on a building the current one does not fire on (DiGi-Organization/DiGi.GIS.YOLO.UI#21).</para>
         /// <para>Names are split by <see cref="TryParseImageFileName(string?, out string?, out short)"/>; a file that does not parse is not a scored building and is skipped.</para>
         /// </summary>
         /// <param name="directory">The folder the detector ran over.</param>

@@ -25,7 +25,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <param name="destinationDirectory">The target directory path on disk where JPEG files will be saved.</param>
         /// <param name="maxConcurrentRequests">The maximum number of concurrent WebAPI requests allowed during image fetching. Defaults to 8.</param>
         /// <param name="resume">When <see langword="true"/>, skips downloading or re-encoding images already present on disk. Defaults to <see langword="true"/>.</param>
-        /// <param name="references">The only buildings to export, intersected with the county's orthophoto listing - a reference the county does not hold is ignored. Null exports every building of the county (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#22).</param>
+        /// <param name="references">The only buildings to export, intersected with the county's orthophoto listing - a reference the county does not hold is ignored. Null exports every building of the county (DiGi-Organization/DiGi.GIS.YOLO.UI#22).</param>
         /// <param name="cancellationToken">A cancellation token to observe while performing the operation.</param>
         /// <returns>A task returning <see langword="true"/> if the export completed successfully; otherwise <see langword="false"/>.</returns>
         [SupportedOSPlatform("windows")]

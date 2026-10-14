@@ -24,8 +24,8 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>Six steps per county: export the imagery, score it with the frozen detector, turn the detections into objects, write them into the building data, read the feature columns back and score them into a construction year, and store that year twice - dated into the year built data, and latest into the building data column.</para>
         /// <para>Each step carries its own flag, so a run can be resumed without repeating the expensive ones, and the three write steps are off by default, so a first pass over a county reads and scores but stores nothing unless a write step is named on. Each step is idempotent: the scratch paths are derived from the county identifier, the detector overwrites its results file rather than appending to it, and a stored year built datum is read back and added to rather than replaced.</para>
         /// <para>Only a building the detector fired on at least once is scored. A building it never fired on carries no per-year confidence series, which is the feature the regressor was built around, so scoring it would be scoring a row of absent features. The consequence is that the run predicts a year for fewer buildings than the file based workflow it replaces, which scored every row of its table - worth knowing before comparing the two reference by reference.</para>
-        /// <para>The detection write is wider than the scoring: it covers every building whose imagery the detector was handed, and replaces each one's detection columns over <see cref="YearBuiltPredictionPipelineOptions.Years"/> as a whole. A building the current weights never fire on is therefore cleared rather than left carrying what earlier weights detected on it (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#21). With the detection and the predicted year writes both on, the predicted year of such a building is cleared as well, since it was derived from the detection evidence that is now gone - a stored user year is never touched (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#28).</para>
-        /// <para><see cref="YearBuiltPredictionPipelineOptions.ReferencesFilePath"/> narrows every step to the buildings of a dataset manifest, and a manifest that does not read refuses the run before any county is touched (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#22).</para>
+        /// <para>The detection write is wider than the scoring: it covers every building whose imagery the detector was handed, and replaces each one's detection columns over <see cref="YearBuiltPredictionPipelineOptions.Years"/> as a whole. A building the current weights never fire on is therefore cleared rather than left carrying what earlier weights detected on it (DiGi-Organization/DiGi.GIS.YOLO.UI#21). With the detection and the predicted year writes both on, the predicted year of such a building is cleared as well, since it was derived from the detection evidence that is now gone - a stored user year is never touched (DiGi-Organization/DiGi.GIS.YOLO.UI#28).</para>
+        /// <para><see cref="YearBuiltPredictionPipelineOptions.ReferencesFilePath"/> narrows every step to the buildings of a dataset manifest, and a manifest that does not read refuses the run before any county is touched (DiGi-Organization/DiGi.GIS.YOLO.UI#22).</para>
         /// <para>The scope is checked before any of it starts. A county identifier that is in no county row - most often a four character county code passed where an identifier was wanted - matches no stored building, so every step reports a legitimate zero and the run ends green having done nothing at all. That is a mis-scoped run rather than an empty county, so it fails here instead.</para>
         /// <para>The options are checked against the model before any county is read. Narrowing them - asking for fewer years or radiuses than the model was trained on - drops features the model was fitted on, so every prediction silently degrades and it is refused. Widening them only adds features the model ignores, so it warns.</para>
         /// <para>The scratch folder of a county that came through without a failed step is removed once the run has finished with it, unless <see cref="YearBuiltPredictionPipelineOptions.CleanScratchDirectory"/> says otherwise - so nothing downstream can depend on what a successful county left behind, which is the gap the two pass workflow used to carry. A county that failed keeps its folder, so re-running it costs seconds rather than repeating the export and the inference.</para>
@@ -261,7 +261,7 @@ namespace DiGi.GIS.YOLO.UI
             // FileNotFoundException for the life of the process, so every county behind it fails the same way.
             // Gated on a non-null predictor: the seam is optional by design, and a missing predictor stays the
             // per-county step failure it is.
-            // The identity of the predictor, stamped on every prediction this run stores (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#26):
+            // The identity of the predictor, stamped on every prediction this run stores (DiGi-Organization/DiGi.GIS.YOLO.UI#26):
             // the stored entry otherwise carries only the run stamp, and after a model swap the history could not tell one
             // predictor's predictions from another's. It is a SHA-256 only for a model file - a heuristic names its rule instead.
             // Null when the predictor states none - stubs and third-party predictors keep storing as before.
@@ -269,7 +269,7 @@ namespace DiGi.GIS.YOLO.UI
 
             // The feature groups a county must carry populated before it is scored. The predictor states its own when it
             // can; a predictor that states none keeps the historical default - the detection and population groups the
-            // retired regressor read (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#27).
+            // retired regressor read (DiGi-Organization/DiGi.GIS.YOLO.UI#27).
             HashSet<string> required_FeatureGroups =
             [
                 DiGi.GIS.IO.Constants.YearBuiltPredictionFeatureGroup.Detection,
@@ -522,7 +522,7 @@ namespace DiGi.GIS.YOLO.UI
 
                     // Every building the detector was handed, fired on or not. The write replaces their detection columns
                     // as a whole, so a building these weights do not fire on loses what earlier weights left on it rather
-                    // than keeping it beside this run's detections of its neighbours (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#21).
+                    // than keeping it beside this run's detections of its neighbours (DiGi-Organization/DiGi.GIS.YOLO.UI#21).
                     HashSet<string> references_Scored = Query.PredictionImageReferences(directory_Images);
                     if (references_Filter is not null)
                     {
@@ -578,7 +578,7 @@ namespace DiGi.GIS.YOLO.UI
 
                     // A building the current detector never fired on has just lost its detection columns, so the predicted
                     // year derived from that evidence is stale and is cleared rather than kept. Only the predicted column
-                    // is cleared - a stored user year is never touched (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#28).
+                    // is cleared - a stored user year is never touched (DiGi-Organization/DiGi.GIS.YOLO.UI#28).
                     if (yearBuiltPredictionPipelineOptions.UpdateDetections && yearBuiltPredictionPipelineOptions.UpdatePredictedYearBuilt)
                     {
                         HashSet<string> references_Detected = new(StringComparer.Ordinal);

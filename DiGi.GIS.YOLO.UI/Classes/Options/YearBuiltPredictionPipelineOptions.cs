@@ -130,7 +130,7 @@ namespace DiGi.GIS.YOLO.UI.Classes
 
         /// <summary>
         /// Gets or sets the path of a <c>dataset_references.tsv</c> manifest whose buildings are the only ones the run exports, detects and writes, resolved against the runner by <see cref="Query.ModelPath(string?)"/>.
-        /// <para>Null runs whole counties. Set, it narrows each county named in <see cref="CountyIds"/> to the buildings of the manifest - the labelled buildings of a YOLO training dataset, whose detections are all a regressor retrain reads, at a fraction of the cost of their 217 counties (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#22).</para>
+        /// <para>Null runs whole counties. Set, it narrows each county named in <see cref="CountyIds"/> to the buildings of the manifest - the labelled buildings of a YOLO training dataset, whose detections are all a regressor retrain reads, at a fraction of the cost of their 217 counties (DiGi-Organization/DiGi.GIS.YOLO.UI#22).</para>
         /// <para>A path that is named but does not read as a manifest with at least one building refuses the run before any county is touched: a filter that quietly reads as no filter would rewrite whole counties.</para>
         /// </summary>
         [JsonInclude, JsonPropertyName(nameof(ReferencesFilePath))]

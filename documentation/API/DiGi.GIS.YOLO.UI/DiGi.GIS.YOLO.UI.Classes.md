@@ -402,7 +402,7 @@ public int ReferenceBatchSize { get; set; }
 
 Gets or sets the path of a `dataset_references.tsv` manifest whose buildings are the only ones the run exports, detects and writes, resolved against the runner by [ModelPath\(string\)](DiGi.GIS.YOLO.UI.md#DiGi.GIS.YOLO.UI.Query.ModelPath(string) 'DiGi\.GIS\.YOLO\.UI\.Query\.ModelPath\(string\)')\.
 
-Null runs whole counties. Set, it narrows each county named in [CountyIds](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.CountyIds 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.CountyIds') to the buildings of the manifest - the labelled buildings of a YOLO training dataset, whose detections are all a regressor retrain reads, at a fraction of the cost of their 217 counties (ZiolkowskiJakub/DiGi.GIS.YOLO.UI#22).
+Null runs whole counties. Set, it narrows each county named in [CountyIds](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.CountyIds 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.CountyIds') to the buildings of the manifest - the labelled buildings of a YOLO training dataset, whose detections are all a regressor retrain reads, at a fraction of the cost of their 217 counties (DiGi-Organization/DiGi.GIS.YOLO.UI#22).
 
 A path that is named but does not read as a manifest with at least one building refuses the run before any county is touched: a filter that quietly reads as no filter would rewrite whole counties.
 
