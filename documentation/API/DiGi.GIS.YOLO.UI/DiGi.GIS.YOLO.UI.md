@@ -345,7 +345,7 @@ When [true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/bu
 
 `references` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
 
-The only buildings to export, intersected with the county's orthophoto listing \- a reference the county does not hold is ignored\. Null exports every building of the county \(DiGi-Organization/DiGi\.GIS\.YOLO\.UI\#22\)\.
+The only buildings to export, intersected with the county's orthophoto listing \- a reference the county does not hold is ignored\. Null exports every building of the county \(DiGi\-Organization/DiGi\.GIS\.YOLO\.UI\#22\)\.
 
 <a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,string,int,bool,System.Collections.Generic.IEnumerable_string_,System.Threading.CancellationToken).cancellationToken'></a>
 
@@ -1450,7 +1450,7 @@ The stamp every prediction of this run carries\.
 
 `modelId` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
 
-The identity of the predictor that produced the years \- normally the SHA\-256 of its model file, or a rule name for a heuristic \- stamped on every prediction as [DiGi\.GIS\.Classes\.PredictedYearBuilt\.ModelId](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.classes.predictedyearbuilt.modelid 'DiGi\.GIS\.Classes\.PredictedYearBuilt\.ModelId'), or null when it is not known \(DiGi-Organization/DiGi\.GIS\.YOLO\.UI\#27\)\.
+The identity of the predictor that produced the years \- normally the SHA\-256 of its model file, or a rule name for a heuristic \- stamped on every prediction as [DiGi\.GIS\.Classes\.PredictedYearBuilt\.ModelId](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.classes.predictedyearbuilt.modelid 'DiGi\.GIS\.Classes\.PredictedYearBuilt\.ModelId'), or null when it is not known \(DiGi\-Organization/DiGi\.GIS\.YOLO\.UI\#27\)\.
 
 <a name='DiGi.GIS.YOLO.UI.Query.YearBuiltDatasAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IDictionary_string,short_,System.DateTimeOffset,string,bool,int,DiGi.WebAPI.Classes.PostOptions,System.Threading.CancellationToken).readStored'></a>
 
