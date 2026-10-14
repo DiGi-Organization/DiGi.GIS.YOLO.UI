@@ -15,6 +15,7 @@ public interface IGISYOLOUIObject : DiGi.Core.Interfaces.IObject
 
 Derived  
 ↳ [DatasetReference](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.DatasetReference 'DiGi\.GIS\.YOLO\.UI\.Classes\.DatasetReference')  
+↳ [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk')  
 ↳ [YearBuiltPredictionPipelineOptions](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions')  
 ↳ [YearBuiltPredictionResult](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionResult 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionResult')  
 ↳ [YOLODetectorEvaluation](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLODetectorEvaluation 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLODetectorEvaluation')  
@@ -42,6 +43,7 @@ public interface IGISYOLOUISerializableObject : DiGi.GIS.YOLO.UI.Interfaces.IGIS
 
 Derived  
 ↳ [DatasetReference](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.DatasetReference 'DiGi\.GIS\.YOLO\.UI\.Classes\.DatasetReference')  
+↳ [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk')  
 ↳ [YearBuiltPredictionPipelineOptions](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions')  
 ↳ [YearBuiltPredictionResult](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionResult 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionResult')  
 ↳ [YOLODetectorEvaluation](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLODetectorEvaluation 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLODetectorEvaluation')  

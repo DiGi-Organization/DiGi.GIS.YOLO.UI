@@ -9,6 +9,7 @@
   "Radiuses": null,
   "MaxConcurrentRequests": 8,
   "BatchSize": 5000,
+  "ChunkSize": 5000,
   "ReferenceBatchSize": 10000,
   "ReferencesFilePath": null,
   "Resume": true,

@@ -31,6 +31,7 @@ namespace DiGi.GIS.YOLO.UI.Classes
             if (yearBuiltPredictionPipelineOptions is not null)
             {
                 BatchSize = yearBuiltPredictionPipelineOptions.BatchSize;
+                ChunkSize = yearBuiltPredictionPipelineOptions.ChunkSize;
                 CleanScratchDirectory = yearBuiltPredictionPipelineOptions.CleanScratchDirectory;
                 Confidence = yearBuiltPredictionPipelineOptions.Confidence;
                 CountyIds = yearBuiltPredictionPipelineOptions.CountyIds is null ? null : [.. yearBuiltPredictionPipelineOptions.CountyIds];
@@ -68,6 +69,15 @@ namespace DiGi.GIS.YOLO.UI.Classes
         /// </summary>
         [JsonInclude, JsonPropertyName(nameof(BatchSize))]
         public int BatchSize { get; set; } = 5000;
+
+        /// <summary>
+        /// Gets or sets the largest number of buildings whose imagery is exported into one folder and handed to the detector in one pass.
+        /// <para>This bounds every image folder of a run: no folder ever holds the imagery of more than this many buildings - about 55 000 files at the default, at about eleven orthophotos per building - instead of a whole county. A county is split into chunks of its buildings in ordinal reference order, each exported into <c>chunks/&lt;index&gt;</c> under the county folder, scored there, and its folder removed once a marker records it as done (DiGi-Organization/DiGi.GIS.YOLO.UI#30).</para>
+        /// <para>The bound is the point. File creation in one folder of 1.4 million files fell from about 200 to about 7 images per second on a machine generating NTFS 8.3 short names - a volume setting that needs an administrator to change and is set per machine - so the run does not rely on that setting being off.</para>
+        /// <para>Below one, the run is refused rather than clamped: one building per chunk would start the detector once per building.</para>
+        /// </summary>
+        [JsonInclude, JsonPropertyName(nameof(ChunkSize))]
+        public int ChunkSize { get; set; } = 5000;
 
         /// <summary>
         /// Gets or sets whether each county's scratch folder - the imagery exported for it and the detection results written from it - is deleted once the run has finished with that county.
@@ -139,6 +149,7 @@ namespace DiGi.GIS.YOLO.UI.Classes
         /// <summary>
         /// Gets or sets whether work a previous run already did is skipped rather than repeated.
         /// <para>Governs the image export, which is the expensive step: an image already on disk is neither fetched nor re-encoded.</para>
+        /// <para>It also governs the chunks of <see cref="ChunkSize"/>: a chunk whose marker names the same buildings, the same weights by SHA-256 and the same <see cref="Confidence"/> is neither exported nor detected again. The weights are part of the check because <c>model.pt</c> is replaced in place, so a marker left by an earlier detector must not stand in for the current one. Off, every chunk is exported and detected again.</para>
         /// </summary>
         [JsonInclude, JsonPropertyName(nameof(Resume))]
         public bool Resume { get; set; } = true;

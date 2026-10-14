@@ -234,6 +234,37 @@ The [System\.Threading\.CancellationToken](https://learn.microsoft.com/en-us/dot
 [System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[YOLOTrainingDatasetResult](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetResult 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetResult')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
 A task returning what the run did, or null when it could not be attempted at all \- no manager, no options, no county named, or no absolute output directory\.
 
+<a name='DiGi.GIS.YOLO.UI.Modify.AssemblePredictionResults(System.Collections.Generic.IEnumerable_string_,string)'></a>
+
+## Modify\.AssemblePredictionResults\(IEnumerable\<string\>, string\) Method
+
+Joins the detector results of a county's prediction chunks into the county's results file, in the order given\.
+
+The results format has no header and one line per image or detection, and every image of a building is in one chunk, so the joined file says exactly what one pass over all the images would have said. The file is rewritten as a whole every time, through a temporary file moved over it, so a repeated or resumed run never doubles a chunk the way an append would (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+A chunk results file that does not exist is skipped: the detector writes none for a chunk with no imagery.
+
+```csharp
+public static bool AssemblePredictionResults(System.Collections.Generic.IEnumerable<string>? paths, string? path);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Modify.AssemblePredictionResults(System.Collections.Generic.IEnumerable_string_,string).paths'></a>
+
+`paths` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
+
+The chunk results files, in chunk order\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.AssemblePredictionResults(System.Collections.Generic.IEnumerable_string_,string).path'></a>
+
+`path` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+The county results file to write\.
+
+#### Returns
+[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')  
+[true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool') when the county results file was written; otherwise [false](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
+
 <a name='DiGi.GIS.YOLO.UI.Modify.CheckYOLOTrainingDatasetLabels(thisDiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions,System.Threading.CancellationToken)'></a>
 
 ## Modify\.CheckYOLOTrainingDatasetLabels\(this YOLOTrainingDatasetOptions, CancellationToken\) Method
@@ -264,6 +295,41 @@ The [System\.Threading\.CancellationToken](https://learn.microsoft.com/en-us/dot
 #### Returns
 [YOLOLabelCheckResult](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOLabelCheckResult 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOLabelCheckResult')  
 The check, or null when there are no options or no absolute dataset directory\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.DeleteDirectoryAsync(string,int,System.Nullable_System.TimeSpan_)'></a>
+
+## Modify\.DeleteDirectoryAsync\(string, int, Nullable\<TimeSpan\>\) Method
+
+Deletes a directory and everything in it, trying again after a short back\-off when a file in it is held open\.
+
+A recursive delete is not atomic: it removes what it can and throws on the first file another process holds, which leaves a folder that looks neither finished nor untouched. A run's own results file being read by a monitoring tool at the moment the run cleans up is enough (county 55417, DiGi-Organization/DiGi.GIS.YOLO.UI#30), and such a hold is usually brief, so the delete is retried. When it still fails, what is left is logged - how many files and which - rather than only the exception.
+
+```csharp
+public static System.Threading.Tasks.Task<bool> DeleteDirectoryAsync(string? directory, int attempts=3, System.Nullable<System.TimeSpan> delay=null);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Modify.DeleteDirectoryAsync(string,int,System.Nullable_System.TimeSpan_).directory'></a>
+
+`directory` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+The directory to delete\. A directory that does not exist counts as deleted\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.DeleteDirectoryAsync(string,int,System.Nullable_System.TimeSpan_).attempts'></a>
+
+`attempts` [System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+How many times the delete is tried\. Below one, it is tried once\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.DeleteDirectoryAsync(string,int,System.Nullable_System.TimeSpan_).delay'></a>
+
+`delay` [System\.Nullable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1 'System\.Nullable\`1')[System\.TimeSpan](https://learn.microsoft.com/en-us/dotnet/api/system.timespan 'System\.TimeSpan')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1 'System\.Nullable\`1')
+
+The wait before the second attempt, doubled before each one after it\. Null waits 250 milliseconds\.
+
+#### Returns
+[System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
+A task returning [true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool') when the directory no longer exists; otherwise [false](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
 
 <a name='DiGi.GIS.YOLO.UI.Modify.EvaluateYOLODetectors(thisDiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions,System.Threading.CancellationToken)'></a>
 
@@ -357,6 +423,67 @@ A cancellation token to observe while performing the operation\.
 [System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
 A task returning [true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool') if the export completed successfully; otherwise [false](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
 
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken)'></a>
+
+## Modify\.ExportPredictionImagesAsync\(this GISWebAPIManager, int, IEnumerable\<OrtoDatasReference\>, string, int, bool, CancellationToken\) Method
+
+Exports the orthophoto prediction images of the listed buildings of a county to the designated output directory\.
+
+The overload a prediction run uses for one chunk of a county: the listing has been read once for the county and split already, so it is not read again per chunk (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+Decodes binary payloads from [DiGi\.GIS\.Classes\.OrtoData\.Bytes](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.classes.ortodata.bytes 'DiGi\.GIS\.Classes\.OrtoData\.Bytes') and re-encodes them as JPEG files named `{reference}_{year}.jpeg`.
+
+```csharp
+public static System.Threading.Tasks.Task<bool> ExportPredictionImagesAsync(this DiGi.GIS.WebAPI.Classes.GISWebAPIManager? gisWebAPIManager, int countyId, System.Collections.Generic.IEnumerable<DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference>? ortoDatasReferences, string? destinationDirectory, int maxConcurrentRequests=8, bool resume=true, System.Threading.CancellationToken cancellationToken=default(System.Threading.CancellationToken));
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken).gisWebAPIManager'></a>
+
+`gisWebAPIManager` [DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.webapi.classes.giswebapimanager 'DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager')
+
+The [DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.webapi.classes.giswebapimanager 'DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager') instance used to communicate with the WebAPI\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken).countyId'></a>
+
+`countyId` [System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+The integer identifier of the county partition the buildings belong to\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken).ortoDatasReferences'></a>
+
+`ortoDatasReferences` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[DiGi\.GIS\.PostgreSQL\.Classes\.OrtoDatasReference](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.postgresql.classes.ortodatasreference 'DiGi\.GIS\.PostgreSQL\.Classes\.OrtoDatasReference')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
+
+The listing entries of the buildings to export\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken).destinationDirectory'></a>
+
+`destinationDirectory` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+The target directory path on disk where JPEG files will be saved\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken).maxConcurrentRequests'></a>
+
+`maxConcurrentRequests` [System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+The maximum number of concurrent WebAPI requests allowed during image fetching\. Defaults to 8\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken).resume'></a>
+
+`resume` [System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')
+
+When [true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool'), skips downloading or re\-encoding images already present on disk\. Defaults to [true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.ExportPredictionImagesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,System.Collections.Generic.IEnumerable_DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference_,string,int,bool,System.Threading.CancellationToken).cancellationToken'></a>
+
+`cancellationToken` [System\.Threading\.CancellationToken](https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken 'System\.Threading\.CancellationToken')
+
+A cancellation token to observe while performing the operation\.
+
+#### Returns
+[System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
+A task returning [true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool') if the export completed successfully; otherwise [false](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
+
 <a name='DiGi.GIS.YOLO.UI.Modify.RunYearBuiltPredictionsAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,DiGi.GIS.IO.Interfaces.IYearBuiltPredictor,DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions,System.IProgress_long_,System.Threading.CancellationToken)'></a>
 
 ## Modify\.RunYearBuiltPredictionsAsync\(this GISWebAPIManager, IYearBuiltPredictor, YearBuiltPredictionPipelineOptions, IProgress\<long\>, CancellationToken\) Method
@@ -370,6 +497,8 @@ Each step carries its own flag, so a run can be resumed without repeating the ex
 Only a building the detector fired on at least once is scored. A building it never fired on carries no per-year confidence series, which is the feature the regressor was built around, so scoring it would be scoring a row of absent features. The consequence is that the run predicts a year for fewer buildings than the file based workflow it replaces, which scored every row of its table - worth knowing before comparing the two reference by reference.
 
 The detection write is wider than the scoring: it covers every building whose imagery the detector was handed, and replaces each one's detection columns over [Years](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.Years 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.Years') as a whole. A building the current weights never fire on is therefore cleared rather than left carrying what earlier weights detected on it (DiGi-Organization/DiGi.GIS.YOLO.UI#21). With the detection and the predicted year writes both on, the predicted year of such a building is cleared as well, since it was derived from the detection evidence that is now gone - a stored user year is never touched (DiGi-Organization/DiGi.GIS.YOLO.UI#28).
+
+A county is exported and detected in chunks of at most [ChunkSize](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.ChunkSize 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.ChunkSize') buildings, each in a folder of its own under `chunks`, so no folder ever holds a whole county: one folder of 1.4 million files collapsed file creation on a machine generating NTFS 8.3 names. A scored chunk leaves a marker - its buildings, the buildings it had imagery for, and the weights' SHA-256 - and its imagery is removed; its results are joined into the county's `results.bbrf` once every chunk is scored, so the score-only input is unchanged. With [Resume](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.Resume 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.Resume') a chunk whose marker matches is stepped over. A county folder written before chunks is still read as it was written (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
 
 [ReferencesFilePath](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.ReferencesFilePath 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.ReferencesFilePath') narrows every step to the buildings of a dataset manifest, and a manifest that does not read refuses the run before any county is touched (DiGi-Organization/DiGi.GIS.YOLO.UI#22).
 
@@ -656,6 +785,35 @@ The year range whose detection columns are replaced when [references](DiGi.GIS.Y
 [System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
 A task returning [true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool') when every batch was accepted; otherwise [false](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
 
+<a name='DiGi.GIS.YOLO.UI.Modify.WriteYearBuiltPredictionChunk(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,string)'></a>
+
+## Modify\.WriteYearBuiltPredictionChunk\(this YearBuiltPredictionChunk, string\) Method
+
+Writes the marker of a prediction chunk\.
+
+Written to a temporary file beside the target and moved over it, so a run stopped mid-write leaves either the previous marker or none - never a truncated one that reads as a finished chunk.
+
+```csharp
+public static bool WriteYearBuiltPredictionChunk(this DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk? yearBuiltPredictionChunk, string? path);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Modify.WriteYearBuiltPredictionChunk(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,string).yearBuiltPredictionChunk'></a>
+
+`yearBuiltPredictionChunk` [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk')
+
+The marker to write\.
+
+<a name='DiGi.GIS.YOLO.UI.Modify.WriteYearBuiltPredictionChunk(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,string).path'></a>
+
+`path` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+The path of the marker\.
+
+#### Returns
+[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')  
+[true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool') when the marker was written; otherwise [false](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
+
 <a name='DiGi.GIS.YOLO.UI.Query'></a>
 
 ## Query Class
@@ -883,6 +1041,47 @@ The second box\.
 [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')  
 The intersection over union in \[0, 1\], or [System\.Double\.NaN](https://learn.microsoft.com/en-us/dotnet/api/system.double.nan 'System\.Double\.NaN') when either box is missing or neither has any area\.
 
+<a name='DiGi.GIS.YOLO.UI.Query.IsResumable(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,System.Collections.Generic.IEnumerable_string_,string,double)'></a>
+
+## Query\.IsResumable\(this YearBuiltPredictionChunk, IEnumerable\<string\>, string, double\) Method
+
+Checks whether a prediction chunk's marker records the work a run is about to do, so the run can step over the chunk instead of exporting and detecting it again\.
+
+It has to name the same buildings in the same order, the same weights by SHA-256 and the same confidence threshold. The weights are compared by hash because `model.pt` is replaced in place, so a marker left by an earlier detector would otherwise stand in for the current one (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+```csharp
+public static bool IsResumable(this DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk? yearBuiltPredictionChunk, System.Collections.Generic.IEnumerable<string>? references, string? modelSHA256, double confidence);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsResumable(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,System.Collections.Generic.IEnumerable_string_,string,double).yearBuiltPredictionChunk'></a>
+
+`yearBuiltPredictionChunk` [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk')
+
+The marker read from disk\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsResumable(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,System.Collections.Generic.IEnumerable_string_,string,double).references'></a>
+
+`references` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
+
+The buildings of the chunk as the run splits them\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsResumable(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,System.Collections.Generic.IEnumerable_string_,string,double).modelSHA256'></a>
+
+`modelSHA256` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+The SHA\-256 of the weights the run detects with\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsResumable(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,System.Collections.Generic.IEnumerable_string_,string,double).confidence'></a>
+
+`confidence` [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+The confidence threshold the run detects with\.
+
+#### Returns
+[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')  
+[true](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool') when the marker records exactly this chunk scored by these weights at this threshold; otherwise [false](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool 'https://docs\.microsoft\.com/en\-us/dotnet/csharp/language\-reference/builtin\-types/bool')\.
+
 <a name='DiGi.GIS.YOLO.UI.Query.Key(string)'></a>
 
 ## Query\.Key\(string\) Method
@@ -1046,6 +1245,47 @@ The [System\.Threading\.CancellationToken](https://learn.microsoft.com/en-us/dot
 [System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[DiGi\.GIS\.Classes\.OrtoDatas](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.classes.ortodatas 'DiGi\.GIS\.Classes\.OrtoDatas')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
 A task returning the building's orthophotos, or null when there are none or they could not be read\.
 
+<a name='DiGi.GIS.YOLO.UI.Query.OrtoDatasReferencesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,DiGi.WebAPI.Classes.PostOptions,System.Threading.CancellationToken)'></a>
+
+## Query\.OrtoDatasReferencesAsync\(this GISWebAPIManager, int, PostOptions, CancellationToken\) Method
+
+Reads the orthophoto listing of a county \- one entry per building that has stored imagery\.
+
+The listing is what a prediction run splits into chunks before any image is fetched, so it is read once per county rather than once per chunk (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+```csharp
+public static System.Threading.Tasks.Task<System.Collections.Generic.List<DiGi.GIS.PostgreSQL.Classes.OrtoDatasReference>?> OrtoDatasReferencesAsync(this DiGi.GIS.WebAPI.Classes.GISWebAPIManager? gisWebAPIManager, int countyId, DiGi.WebAPI.Classes.PostOptions? postOptions=null, System.Threading.CancellationToken cancellationToken=default(System.Threading.CancellationToken));
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Query.OrtoDatasReferencesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,DiGi.WebAPI.Classes.PostOptions,System.Threading.CancellationToken).gisWebAPIManager'></a>
+
+`gisWebAPIManager` [DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.webapi.classes.giswebapimanager 'DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager')
+
+The [DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.webapi.classes.giswebapimanager 'DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager') instance used to communicate with the WebAPI\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.OrtoDatasReferencesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,DiGi.WebAPI.Classes.PostOptions,System.Threading.CancellationToken).countyId'></a>
+
+`countyId` [System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+The identifier of the county part to list\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.OrtoDatasReferencesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,DiGi.WebAPI.Classes.PostOptions,System.Threading.CancellationToken).postOptions'></a>
+
+`postOptions` [DiGi\.WebAPI\.Classes\.PostOptions](https://learn.microsoft.com/en-us/dotnet/api/digi.webapi.classes.postoptions 'DiGi\.WebAPI\.Classes\.PostOptions')
+
+Optional configuration options for the request\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.OrtoDatasReferencesAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,DiGi.WebAPI.Classes.PostOptions,System.Threading.CancellationToken).cancellationToken'></a>
+
+`cancellationToken` [System\.Threading\.CancellationToken](https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken 'System\.Threading\.CancellationToken')
+
+The [System\.Threading\.CancellationToken](https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken 'System\.Threading\.CancellationToken') to observe while waiting for the task to complete\.
+
+#### Returns
+[System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[DiGi\.GIS\.PostgreSQL\.Classes\.OrtoDatasReference](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.postgresql.classes.ortodatasreference 'DiGi\.GIS\.PostgreSQL\.Classes\.OrtoDatasReference')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
+A task returning the listing \- empty for a county with no imagery \- or null when it could not be read\.
+
 <a name='DiGi.GIS.YOLO.UI.Query.PixelBoundingBox(thisDiGi.GIS.Classes.OrtoData,DiGi.Geometry.Planar.Classes.BoundingBox2D,double,int,int,bool)'></a>
 
 ## Query\.PixelBoundingBox\(this OrtoData, BoundingBox2D, double, int, int, bool\) Method
@@ -1100,6 +1340,35 @@ When this method returns, true if the projected rectangle crossed an image edge 
 #### Returns
 [DiGi\.Geometry\.Planar\.Classes\.BoundingBox2D](https://learn.microsoft.com/en-us/dotnet/api/digi.geometry.planar.classes.boundingbox2d 'DiGi\.Geometry\.Planar\.Classes\.BoundingBox2D')  
 The pixel rectangle, with [DiGi\.Geometry\.Planar\.Classes\.BoundingBox2D\.Min](https://learn.microsoft.com/en-us/dotnet/api/digi.geometry.planar.classes.boundingbox2d.min 'DiGi\.Geometry\.Planar\.Classes\.BoundingBox2D\.Min') at its top\-left corner, or null when there is no image, no box, or no area left inside the image\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.PredictionChunks(System.Collections.Generic.IEnumerable_string_,int)'></a>
+
+## Query\.PredictionChunks\(IEnumerable\<string\>, int\) Method
+
+Splits the buildings of a county into the chunks a prediction run exports and detects one at a time\.
+
+The references are de-duplicated, ordered ordinally and cut into consecutive runs of at most [chunkSize](DiGi.GIS.YOLO.UI.md#DiGi.GIS.YOLO.UI.Query.PredictionChunks(System.Collections.Generic.IEnumerable_string_,int).chunkSize 'DiGi\.GIS\.YOLO\.UI\.Query\.PredictionChunks\(System\.Collections\.Generic\.IEnumerable\<string\>, int\)\.chunkSize'), so the same buildings always make the same chunks - which is what lets a resumed run recognise a chunk it finished before (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+```csharp
+public static System.Collections.Generic.List<System.Collections.Generic.List<string>> PredictionChunks(System.Collections.Generic.IEnumerable<string?>? references, int chunkSize);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Query.PredictionChunks(System.Collections.Generic.IEnumerable_string_,int).references'></a>
+
+`references` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
+
+The building references\. Null and blank entries are skipped\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.PredictionChunks(System.Collections.Generic.IEnumerable_string_,int).chunkSize'></a>
+
+`chunkSize` [System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+The largest number of buildings in one chunk\.
+
+#### Returns
+[System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')  
+The chunks in order; empty when there are no references or [chunkSize](DiGi.GIS.YOLO.UI.md#DiGi.GIS.YOLO.UI.Query.PredictionChunks(System.Collections.Generic.IEnumerable_string_,int).chunkSize 'DiGi\.GIS\.YOLO\.UI\.Query\.PredictionChunks\(System\.Collections\.Generic\.IEnumerable\<string\>, int\)\.chunkSize') is below one\.
 
 <a name='DiGi.GIS.YOLO.UI.Query.PredictionImageReferences(string)'></a>
 
@@ -1479,6 +1748,29 @@ The [System\.Threading\.CancellationToken](https://learn.microsoft.com/en-us/dot
 #### Returns
 [System\.Threading\.Tasks\.Task&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')[System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[DiGi\.GIS\.Classes\.YearBuiltData](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.classes.yearbuiltdata 'DiGi\.GIS\.Classes\.YearBuiltData')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task-1 'System\.Threading\.Tasks\.Task\`1')  
 A task returning the year built data to store, each carrying its building's history plus this run's prediction\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.YearBuiltPredictionChunk(string)'></a>
+
+## Query\.YearBuiltPredictionChunk\(string\) Method
+
+Reads the marker of a prediction chunk\.
+
+A marker that is missing, empty or does not read is answered with null, which a run treats as a chunk it has not finished: the cost of a damaged marker is the chunk being exported and detected again, never a chunk being stepped over.
+
+```csharp
+public static DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk? YearBuiltPredictionChunk(string? path);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Query.YearBuiltPredictionChunk(string).path'></a>
+
+`path` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+The path of the marker\.
+
+#### Returns
+[YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk')  
+The marker, or null when there is none to read\.
 
 <a name='DiGi.GIS.YOLO.UI.Query.YearBuiltPredictionPipelineOptions(string)'></a>
 

@@ -104,6 +104,21 @@ public static class DirectoryName
 Inheritance [System\.Object](https://learn.microsoft.com/en-us/dotnet/api/system.object 'System\.Object') → DirectoryName
 ### Fields
 
+<a name='DiGi.GIS.YOLO.UI.Constants.DirectoryName.PredictionChunks'></a>
+
+## DirectoryName\.PredictionChunks Field
+
+Gets the name of the folder under a county's scratch folder that holds the chunks of its prediction imagery\.
+
+Each chunk is a folder of its own, named by [PredictionChunkFormat](DiGi.GIS.YOLO.UI.Constants.md#DiGi.GIS.YOLO.UI.Constants.FileName.PredictionChunkFormat 'DiGi\.GIS\.YOLO\.UI\.Constants\.FileName\.PredictionChunkFormat'), beside its marker and its detector results, so no single folder ever holds the imagery of a whole county (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+```csharp
+public const string PredictionChunks = "chunks";
+```
+
+#### Field Value
+[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
 <a name='DiGi.GIS.YOLO.UI.Constants.DirectoryName.PredictionImages'></a>
 
 ## DirectoryName\.PredictionImages Field
@@ -198,6 +213,47 @@ A resume continues this file, so a run whose folder holds it and no completed `<
 
 ```csharp
 public const string LastWeights = "last.pt";
+```
+
+#### Field Value
+[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+<a name='DiGi.GIS.YOLO.UI.Constants.FileName.PredictionChunkExtension'></a>
+
+## FileName\.PredictionChunkExtension Field
+
+Gets the extension of a prediction chunk's marker \- the record, written once the detector has scored the chunk, that lets a resumed run step over it\.
+
+```csharp
+public const string PredictionChunkExtension = ".json";
+```
+
+#### Field Value
+[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+<a name='DiGi.GIS.YOLO.UI.Constants.FileName.PredictionChunkFormat'></a>
+
+## FileName\.PredictionChunkFormat Field
+
+Gets the format of the name a prediction chunk is filed under \- its zero\-based index, zero\-padded to six digits, so the chunks of a county sort in index order by name\.
+
+The chunk's image folder carries the bare name, its marker the name plus [PredictionChunkExtension](DiGi.GIS.YOLO.UI.Constants.md#DiGi.GIS.YOLO.UI.Constants.FileName.PredictionChunkExtension 'DiGi\.GIS\.YOLO\.UI\.Constants\.FileName\.PredictionChunkExtension'), and its detector results the name plus [PredictionChunkResultsExtension](DiGi.GIS.YOLO.UI.Constants.md#DiGi.GIS.YOLO.UI.Constants.FileName.PredictionChunkResultsExtension 'DiGi\.GIS\.YOLO\.UI\.Constants\.FileName\.PredictionChunkResultsExtension').
+
+```csharp
+public const string PredictionChunkFormat = "D6";
+```
+
+#### Field Value
+[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+<a name='DiGi.GIS.YOLO.UI.Constants.FileName.PredictionChunkResultsExtension'></a>
+
+## FileName\.PredictionChunkResultsExtension Field
+
+Gets the extension of the file the detector writes a prediction chunk's results to\. The county's [PredictionResults](DiGi.GIS.YOLO.UI.Constants.md#DiGi.GIS.YOLO.UI.Constants.FileName.PredictionResults 'DiGi\.GIS\.YOLO\.UI\.Constants\.FileName\.PredictionResults') is these files joined in chunk order\.
+
+```csharp
+public const string PredictionChunkResultsExtension = ".bbrf";
 ```
 
 #### Field Value

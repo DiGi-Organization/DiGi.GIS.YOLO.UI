@@ -41,37 +41,9 @@ namespace DiGi.GIS.YOLO.UI
                 Directory.CreateDirectory(destinationDirectory);
             }
 
-            HttpClient? httpClient_References = gisWebAPIManager.CreateHttpClient<OrtoDatasController>(nameof(OrtoDatasController.GetOrtoDatasReferencesByCountyIdAsync), out string? path_References);
-            if (httpClient_References is null || string.IsNullOrWhiteSpace(path_References))
+            List<OrtoDatasReference>? ortoDatasReferences = await Query.OrtoDatasReferencesAsync(gisWebAPIManager, countyId, cancellationToken: cancellationToken);
+            if (ortoDatasReferences is null)
             {
-                Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for GetOrtoDatasReferencesByCountyIdAsync could not be resolved");
-                return false;
-            }
-
-            HttpClient? httpClient_Item = gisWebAPIManager.CreateHttpClient<OrtoDatasController>(nameof(OrtoDatasController.GetItemByReferenceAsync), out string? path_Item);
-            if (httpClient_Item is null || string.IsNullOrWhiteSpace(path_Item))
-            {
-                Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for GetItemByReferenceAsync could not be resolved");
-                return false;
-            }
-
-            string requestUri_References = new UrlBuilder(path_References).AddParameter("countyid", countyId).ToString();
-            PostOptions postOptions = new() { RequestResult = true };
-
-            PostResponse<List<OrtoDatasReference>?> postResponse_References;
-            try
-            {
-                postResponse_References = await DiGi.WebAPI.Query.GetAsync<List<OrtoDatasReference>>(httpClient_References, requestUri_References, postOptions);
-            }
-            catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
-            {
-                Serilog.Modify.Log(exception, "Failed to retrieve OrtoDatasReference list for county {CountyId}", countyId);
-                return false;
-            }
-
-            if (postResponse_References is null || !postResponse_References.Succeeded || postResponse_References.Result is not List<OrtoDatasReference> ortoDatasReferences)
-            {
-                Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "OrtoDatasReferences query returned unsuccessful result for county {CountyId}", countyId);
                 return false;
             }
 
@@ -86,15 +58,50 @@ namespace DiGi.GIS.YOLO.UI
 
             HashSet<string>? references_Filter = references is null ? null : new(references.Where(x => !string.IsNullOrWhiteSpace(x)), StringComparer.Ordinal);
 
+            List<OrtoDatasReference> ortoDatasReferences_Filtered = references_Filter is null ? ortoDatasReferences : [.. ortoDatasReferences.Where(x => x?.Reference is string reference && references_Filter.Contains(reference))];
+
+            return await ExportPredictionImagesAsync(gisWebAPIManager, countyId, ortoDatasReferences_Filtered, destinationDirectory, maxConcurrentRequests, resume, cancellationToken);
+        }
+
+        /// <summary>
+        /// Exports the orthophoto prediction images of the listed buildings of a county to the designated output directory.
+        /// <para>The overload a prediction run uses for one chunk of a county: the listing has been read once for the county and split already, so it is not read again per chunk (DiGi-Organization/DiGi.GIS.YOLO.UI#30).</para>
+        /// <para>Decodes binary payloads from <see cref="OrtoData.Bytes"/> and re-encodes them as JPEG files named <c>{reference}_{year}.jpeg</c>.</para>
+        /// </summary>
+        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="countyId">The integer identifier of the county partition the buildings belong to.</param>
+        /// <param name="ortoDatasReferences">The listing entries of the buildings to export.</param>
+        /// <param name="destinationDirectory">The target directory path on disk where JPEG files will be saved.</param>
+        /// <param name="maxConcurrentRequests">The maximum number of concurrent WebAPI requests allowed during image fetching. Defaults to 8.</param>
+        /// <param name="resume">When <see langword="true"/>, skips downloading or re-encoding images already present on disk. Defaults to <see langword="true"/>.</param>
+        /// <param name="cancellationToken">A cancellation token to observe while performing the operation.</param>
+        /// <returns>A task returning <see langword="true"/> if the export completed successfully; otherwise <see langword="false"/>.</returns>
+        [SupportedOSPlatform("windows")]
+        public static async Task<bool> ExportPredictionImagesAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, IEnumerable<OrtoDatasReference>? ortoDatasReferences, string? destinationDirectory, int maxConcurrentRequests = 8, bool resume = true, CancellationToken cancellationToken = default)
+        {
+            if (gisWebAPIManager is null || countyId <= 0 || ortoDatasReferences is null || string.IsNullOrWhiteSpace(destinationDirectory))
+            {
+                return false;
+            }
+
+            if (!Directory.Exists(destinationDirectory))
+            {
+                Directory.CreateDirectory(destinationDirectory);
+            }
+
+            HttpClient? httpClient_Item = gisWebAPIManager.CreateHttpClient<OrtoDatasController>(nameof(OrtoDatasController.GetItemByReferenceAsync), out string? path_Item);
+            if (httpClient_Item is null || string.IsNullOrWhiteSpace(path_Item))
+            {
+                Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for GetItemByReferenceAsync could not be resolved");
+                return false;
+            }
+
+            PostOptions postOptions = new() { RequestResult = true };
+
             List<OrtoDatasReference> ortoDatasReferences_Valid = [];
             foreach (OrtoDatasReference ortoDatasReference in ortoDatasReferences)
             {
                 if (ortoDatasReference is null || string.IsNullOrWhiteSpace(ortoDatasReference.Reference))
-                {
-                    continue;
-                }
-
-                if (references_Filter is not null && !references_Filter.Contains(ortoDatasReference.Reference!))
                 {
                     continue;
                 }

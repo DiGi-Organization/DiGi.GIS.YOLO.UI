@@ -22,6 +22,22 @@ namespace DiGi.GIS.YOLO.UI.Constants
         public const string PredictionResults = "results.bbrf";
 
         /// <summary>
+        /// Gets the format of the name a prediction chunk is filed under - its zero-based index, zero-padded to six digits, so the chunks of a county sort in index order by name.
+        /// <para>The chunk's image folder carries the bare name, its marker the name plus <see cref="PredictionChunkExtension"/>, and its detector results the name plus <see cref="PredictionChunkResultsExtension"/>.</para>
+        /// </summary>
+        public const string PredictionChunkFormat = "D6";
+
+        /// <summary>
+        /// Gets the extension of a prediction chunk's marker - the record, written once the detector has scored the chunk, that lets a resumed run step over it.
+        /// </summary>
+        public const string PredictionChunkExtension = ".json";
+
+        /// <summary>
+        /// Gets the extension of the file the detector writes a prediction chunk's results to. The county's <see cref="PredictionResults"/> is these files joined in chunk order.
+        /// </summary>
+        public const string PredictionChunkResultsExtension = ".bbrf";
+
+        /// <summary>
         /// Gets the default filename of the configuration file for the YOLO training dataset tooling - the dataset builder, the label check and the detector evaluation.
         /// </summary>
         public const string YOLOTrainingDatasetOptions = "YOLOTrainingDatasetOptions.json";

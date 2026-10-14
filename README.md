@@ -45,13 +45,31 @@ Every write step is off in the template on purpose: the pipeline writes deployed
 | Code | Meaning |
 |---|---|
 | 0 | The run completed and no step reported a failure. |
-| 1 | The options file could not be read, names no county or no scratch directory, narrows the model's feature contract, or names a `ReferencesFilePath` that does not read as a manifest. |
+| 1 | The options file could not be read, names no county or no scratch directory, narrows the model's feature contract, names a `ReferencesFilePath` that does not read as a manifest, or sets `ChunkSize` below 1. |
 | 2 | The environment preflight failed — this machine cannot run the detector, or the year built model is missing. |
 | 3 | No Web API authorization key was found. |
 | 4 | A step failed while running. |
 | 5 | The run was cancelled. |
 
 Each run logs the **SHA-256 of the detector weights** with its start line and adds it to `YearBuiltPredictionResult.Messages` (`Model SHA-256: …`). Stored detections carry only the run stamp, so this line is what ties a run to the detector that wrote it once `model.pt` has been replaced in place. Weights that exist but cannot be read to hash them are refused (exit code 2).
+
+### Bounded image folders — `ChunkSize`
+
+A county is never exported into one folder. Its buildings are sorted ordinally and split into chunks of at most `ChunkSize` buildings (default 5000, about 55 000 images). Each chunk is exported, detected and recorded on its own ([#30](https://github.com/DiGi-Organization/DiGi.GIS.YOLO.UI/issues/30)):
+
+```
+<ScratchDirectory>/<countyId>/
+├── chunks/000000/       the chunk's {reference}_{year}.jpeg, removed once its marker is written
+├── chunks/000000.json   marker: the chunk's buildings, the ones it had imagery for, the weights' SHA-256, Confidence
+├── chunks/000000.bbrf   the detector's results for the chunk
+└── results.bbrf         the chunk results joined in order, written once every chunk is scored
+```
+
+- **Why.** One flat folder of 1.4 M files collapsed the export of m. st. Warszawa (55417) from about 200 to 6.5–8 images/s, on a machine generating NTFS 8.3 short names. Turning that off (`fsutil 8dot3name set C: 1`) restored 204 images/s, but it is an administrator setting kept per machine, and it was back on a few days later. A bounded folder does not depend on it. It also bounds the disk: at most one chunk of imagery exists at a time when `CleanScratchDirectory` is on.
+- **Resume.** With `Resume` on, a chunk whose marker names the same buildings, the same weights (SHA-256) and the same `Confidence` is neither exported nor detected again. A chunk without a matching marker keeps the imagery of its own buildings, so an interrupted export continues, and drops imagery of buildings that moved to another chunk. That happens when `ChunkSize` or the manifest changed. The weights are part of the match because `model.pt` is replaced in place.
+- **Score-only runs are unchanged.** They read `results.bbrf` and take the buildings the detector was handed from the markers, since the chunk folders are gone by then. A detection run deletes `results.bbrf` before its first chunk and joins it only after the last, so a run that stopped part way leaves no results to score.
+- **A county folder from before #30** (a flat `images/` folder and no `chunks/`) is still read as written when `ExportImages` is off.
+- The detector starts once per chunk: about 31 starts for Warszawa at the default.
 
 ### Writing detections with new weights
 

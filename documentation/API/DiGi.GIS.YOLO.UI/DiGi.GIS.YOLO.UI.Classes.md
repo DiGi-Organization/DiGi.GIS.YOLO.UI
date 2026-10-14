@@ -176,6 +176,206 @@ public string? Reference { get; }
 #### Property Value
 [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
 
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk'></a>
+
+## YearBuiltPredictionChunk Class
+
+The marker of one prediction chunk the detector has scored: which buildings the chunk holds, which of them it was handed imagery for, and which detector scored them\.
+
+Written beside the chunk's results once the detector has finished with it, and only then, so a marker on disk means a complete chunk. A resumed run steps over a chunk whose marker names the same buildings, the same weights and the same confidence threshold, and reads the scored buildings back from it once the chunk's imagery has been removed (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+```csharp
+public class YearBuiltPredictionChunk : DiGi.Core.Classes.SerializableObject, DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUISerializableObject, DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUIObject, DiGi.Core.Interfaces.IObject, DiGi.Core.Interfaces.ISerializableObject, DiGi.Core.Interfaces.ICloneableObject<DiGi.Core.Interfaces.ISerializableObject>, DiGi.Core.Interfaces.ICloneableObject
+```
+
+Inheritance [System\.Object](https://learn.microsoft.com/en-us/dotnet/api/system.object 'System\.Object') → [DiGi\.Core\.Classes\.Object](https://learn.microsoft.com/en-us/dotnet/api/digi.core.classes.object 'DiGi\.Core\.Classes\.Object') → [DiGi\.Core\.Classes\.SerializableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.classes.serializableobject 'DiGi\.Core\.Classes\.SerializableObject') → YearBuiltPredictionChunk
+
+Implements [IGISYOLOUISerializableObject](DiGi.GIS.YOLO.UI.Interfaces.md#DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUISerializableObject 'DiGi\.GIS\.YOLO\.UI\.Interfaces\.IGISYOLOUISerializableObject'), [IGISYOLOUIObject](DiGi.GIS.YOLO.UI.Interfaces.md#DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUIObject 'DiGi\.GIS\.YOLO\.UI\.Interfaces\.IGISYOLOUIObject'), [DiGi\.Core\.Interfaces\.IObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.iobject 'DiGi\.Core\.Interfaces\.IObject'), [DiGi\.Core\.Interfaces\.ISerializableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.iserializableobject 'DiGi\.Core\.Interfaces\.ISerializableObject'), [DiGi\.Core\.Interfaces\.ICloneableObject&lt;](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.icloneableobject-1 'DiGi\.Core\.Interfaces\.ICloneableObject\`1')[DiGi\.Core\.Interfaces\.ISerializableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.iserializableobject 'DiGi\.Core\.Interfaces\.ISerializableObject')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.icloneableobject-1 'DiGi\.Core\.Interfaces\.ICloneableObject\`1'), [DiGi\.Core\.Interfaces\.ICloneableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.icloneableobject 'DiGi\.Core\.Interfaces\.ICloneableObject')
+### Constructors
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk)'></a>
+
+## YearBuiltPredictionChunk\(YearBuiltPredictionChunk\) Constructor
+
+Initializes a new instance of the [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk') class by copying an existing one\.
+
+```csharp
+public YearBuiltPredictionChunk(DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk? yearBuiltPredictionChunk);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk).yearBuiltPredictionChunk'></a>
+
+`yearBuiltPredictionChunk` [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk')
+
+The [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk') to copy from\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset)'></a>
+
+## YearBuiltPredictionChunk\(int, IEnumerable\<string\>, IEnumerable\<string\>, long, string, double, DateTimeOffset\) Constructor
+
+Initializes a new instance of the [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk') class\.
+
+```csharp
+public YearBuiltPredictionChunk(int index, System.Collections.Generic.IEnumerable<string>? references, System.Collections.Generic.IEnumerable<string>? scoredReferences, long imageCount, string? modelSHA256, double confidence, System.DateTimeOffset completed);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset).index'></a>
+
+`index` [System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+The zero\-based index of the chunk within its county\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset).references'></a>
+
+`references` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
+
+The buildings the chunk holds, in ordinal order\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset).scoredReferences'></a>
+
+`scoredReferences` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
+
+The buildings the detector was handed imagery for \- the chunk's buildings that have at least one image\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset).imageCount'></a>
+
+`imageCount` [System\.Int64](https://learn.microsoft.com/en-us/dotnet/api/system.int64 'System\.Int64')
+
+The number of images the detector was handed\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset).modelSHA256'></a>
+
+`modelSHA256` [System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+The SHA\-256 of the weights that scored the chunk\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset).confidence'></a>
+
+`confidence` [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+The confidence threshold the detector reported with\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(int,System.Collections.Generic.IEnumerable_string_,System.Collections.Generic.IEnumerable_string_,long,string,double,System.DateTimeOffset).completed'></a>
+
+`completed` [System\.DateTimeOffset](https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset 'System\.DateTimeOffset')
+
+When the detector finished with the chunk\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(System.Text.Json.Nodes.JsonObject)'></a>
+
+## YearBuiltPredictionChunk\(JsonObject\) Constructor
+
+Initializes a new instance of the [YearBuiltPredictionChunk](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionChunk') class from a [System\.Text\.Json\.Nodes\.JsonObject](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonobject 'System\.Text\.Json\.Nodes\.JsonObject')\.
+
+```csharp
+public YearBuiltPredictionChunk(System.Text.Json.Nodes.JsonObject? jsonObject);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.YearBuiltPredictionChunk(System.Text.Json.Nodes.JsonObject).jsonObject'></a>
+
+`jsonObject` [System\.Text\.Json\.Nodes\.JsonObject](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonobject 'System\.Text\.Json\.Nodes\.JsonObject')
+
+The [System\.Text\.Json\.Nodes\.JsonObject](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonobject 'System\.Text\.Json\.Nodes\.JsonObject') containing the serialized data\.
+### Properties
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.Completed'></a>
+
+## YearBuiltPredictionChunk\.Completed Property
+
+Gets when the detector finished with the chunk\.
+
+```csharp
+public System.DateTimeOffset Completed { get; }
+```
+
+#### Property Value
+[System\.DateTimeOffset](https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset 'System\.DateTimeOffset')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.Confidence'></a>
+
+## YearBuiltPredictionChunk\.Confidence Property
+
+Gets the confidence threshold the detector reported with\. A lower threshold reports more detections, so a chunk scored at another threshold is scored again\.
+
+```csharp
+public double Confidence { get; }
+```
+
+#### Property Value
+[System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.ImageCount'></a>
+
+## YearBuiltPredictionChunk\.ImageCount Property
+
+Gets the number of images the detector was handed\.
+
+```csharp
+public long ImageCount { get; }
+```
+
+#### Property Value
+[System\.Int64](https://learn.microsoft.com/en-us/dotnet/api/system.int64 'System\.Int64')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.Index'></a>
+
+## YearBuiltPredictionChunk\.Index Property
+
+Gets the zero\-based index of the chunk within its county\.
+
+```csharp
+public int Index { get; }
+```
+
+#### Property Value
+[System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.ModelSHA256'></a>
+
+## YearBuiltPredictionChunk\.ModelSHA256 Property
+
+Gets the SHA\-256 of the weights that scored the chunk\.
+
+`model.pt` is replaced in place when a new detector ships, so the file name says nothing; a chunk scored by other weights is scored again.
+
+```csharp
+public string? ModelSHA256 { get; }
+```
+
+#### Property Value
+[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.References'></a>
+
+## YearBuiltPredictionChunk\.References Property
+
+Gets the buildings the chunk holds, in ordinal order \- every building of the chunk, imagery or not\.
+
+```csharp
+public System.Collections.Generic.List<string>? References { get; }
+```
+
+#### Property Value
+[System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk.ScoredReferences'></a>
+
+## YearBuiltPredictionChunk\.ScoredReferences Property
+
+Gets the buildings the detector was handed imagery for, fired on or not\.
+
+The detection write replaces the detection columns of exactly these buildings (DiGi-Organization/DiGi.GIS.YOLO.UI#21). The chunk's image folder is the other record of them, and it is removed once this marker is written.
+
+```csharp
+public System.Collections.Generic.List<string>? ScoredReferences { get; }
+```
+
+#### Property Value
+[System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[System\.String](https://learn.microsoft.com/en-us/dotnet/api/system.string 'System\.String')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')
+
 <a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions'></a>
 
 ## YearBuiltPredictionPipelineOptions Class
@@ -250,6 +450,25 @@ A county carries ninety-odd detection columns over tens of thousands of building
 
 ```csharp
 public int BatchSize { get; set; }
+```
+
+#### Property Value
+[System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.ChunkSize'></a>
+
+## YearBuiltPredictionPipelineOptions\.ChunkSize Property
+
+Gets or sets the largest number of buildings whose imagery is exported into one folder and handed to the detector in one pass\.
+
+This bounds every image folder of a run: no folder ever holds the imagery of more than this many buildings - about 55 000 files at the default, at about eleven orthophotos per building - instead of a whole county. A county is split into chunks of its buildings in ordinal reference order, each exported into `chunks/<index>` under the county folder, scored there, and its folder removed once a marker records it as done (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+
+The bound is the point. File creation in one folder of 1.4 million files fell from about 200 to about 7 images per second on a machine generating NTFS 8.3 short names - a volume setting that needs an administrator to change and is set per machine - so the run does not rely on that setting being off.
+
+Below one, the run is refused rather than clamped: one building per chunk would start the detector once per building.
+
+```csharp
+public int ChunkSize { get; set; }
 ```
 
 #### Property Value
@@ -420,6 +639,8 @@ public string? ReferencesFilePath { get; set; }
 Gets or sets whether work a previous run already did is skipped rather than repeated\.
 
 Governs the image export, which is the expensive step: an image already on disk is neither fetched nor re-encoded.
+
+It also governs the chunks of [ChunkSize](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.ChunkSize 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.ChunkSize'): a chunk whose marker names the same buildings, the same weights by SHA-256 and the same [Confidence](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionPipelineOptions.Confidence 'DiGi\.GIS\.YOLO\.UI\.Classes\.YearBuiltPredictionPipelineOptions\.Confidence') is neither exported nor detected again. The weights are part of the check because `model.pt` is replaced in place, so a marker left by an earlier detector must not stand in for the current one. Off, every chunk is exported and detected again.
 
 ```csharp
 public bool Resume { get; set; }

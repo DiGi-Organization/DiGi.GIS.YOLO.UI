@@ -10,7 +10,7 @@ namespace DiGi.GIS.YOLO.UI
     {
         /// <summary>
         /// Decodes the orthophoto payload of an <see cref="OrtoData"/> and saves it as a JPEG file, reporting the pixel size of the saved image.
-        /// <para>The one encoder both the inference export (<see cref="ExportPredictionImagesAsync"/>) and the training dataset builder (<see cref="AppendYOLOTrainingDatasetAsync"/>) save through, so the detector is trained on the same pixels it is later asked to score. The legacy builder encoded training images with WPF and normalised label boxes by the device-independent width of the image; this one reports <see cref="Image.Width"/> and <see cref="Image.Height"/>, which System.Drawing gives in pixels.</para>
+        /// <para>The one encoder both the inference export (<see cref="ExportPredictionImagesAsync(DiGi.GIS.WebAPI.Classes.GISWebAPIManager?, int, string?, int, bool, System.Collections.Generic.IEnumerable{string}?, System.Threading.CancellationToken)"/>) and the training dataset builder (<see cref="AppendYOLOTrainingDatasetAsync"/>) save through, so the detector is trained on the same pixels it is later asked to score. The legacy builder encoded training images with WPF and normalised label boxes by the device-independent width of the image; this one reports <see cref="Image.Width"/> and <see cref="Image.Height"/>, which System.Drawing gives in pixels.</para>
         /// <para>The file is overwritten when it exists. Deciding whether to skip it is the caller&apos;s business.</para>
         /// </summary>
         /// <param name="ortoData">The orthophoto whose <see cref="OrtoData.Bytes"/> are saved.</param>

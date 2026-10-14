@@ -25,6 +25,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>Each step carries its own flag, so a run can be resumed without repeating the expensive ones, and the three write steps are off by default, so a first pass over a county reads and scores but stores nothing unless a write step is named on. Each step is idempotent: the scratch paths are derived from the county identifier, the detector overwrites its results file rather than appending to it, and a stored year built datum is read back and added to rather than replaced.</para>
         /// <para>Only a building the detector fired on at least once is scored. A building it never fired on carries no per-year confidence series, which is the feature the regressor was built around, so scoring it would be scoring a row of absent features. The consequence is that the run predicts a year for fewer buildings than the file based workflow it replaces, which scored every row of its table - worth knowing before comparing the two reference by reference.</para>
         /// <para>The detection write is wider than the scoring: it covers every building whose imagery the detector was handed, and replaces each one's detection columns over <see cref="YearBuiltPredictionPipelineOptions.Years"/> as a whole. A building the current weights never fire on is therefore cleared rather than left carrying what earlier weights detected on it (DiGi-Organization/DiGi.GIS.YOLO.UI#21). With the detection and the predicted year writes both on, the predicted year of such a building is cleared as well, since it was derived from the detection evidence that is now gone - a stored user year is never touched (DiGi-Organization/DiGi.GIS.YOLO.UI#28).</para>
+        /// <para>A county is exported and detected in chunks of at most <see cref="YearBuiltPredictionPipelineOptions.ChunkSize"/> buildings, each in a folder of its own under <c>chunks</c>, so no folder ever holds a whole county: one folder of 1.4 million files collapsed file creation on a machine generating NTFS 8.3 names. A scored chunk leaves a marker - its buildings, the buildings it had imagery for, and the weights' SHA-256 - and its imagery is removed; its results are joined into the county's <c>results.bbrf</c> once every chunk is scored, so the score-only input is unchanged. With <see cref="YearBuiltPredictionPipelineOptions.Resume"/> a chunk whose marker matches is stepped over. A county folder written before chunks is still read as it was written (DiGi-Organization/DiGi.GIS.YOLO.UI#30).</para>
         /// <para><see cref="YearBuiltPredictionPipelineOptions.ReferencesFilePath"/> narrows every step to the buildings of a dataset manifest, and a manifest that does not read refuses the run before any county is touched (DiGi-Organization/DiGi.GIS.YOLO.UI#22).</para>
         /// <para>The scope is checked before any of it starts. A county identifier that is in no county row - most often a four character county code passed where an identifier was wanted - matches no stored building, so every step reports a legitimate zero and the run ends green having done nothing at all. That is a mis-scoped run rather than an empty county, so it fails here instead.</para>
         /// <para>The options are checked against the model before any county is read. Narrowing them - asking for fewer years or radiuses than the model was trained on - drops features the model was fitted on, so every prediction silently degrades and it is refused. Widening them only adds features the model ignores, so it warns.</para>
@@ -107,26 +108,20 @@ namespace DiGi.GIS.YOLO.UI
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Warning, "Year built prediction step {Step} did not complete - county {CountyId}", stepName, countyId);
             }
 
-            void CleanScratch(int countyId, string directory)
+            async Task CleanScratchAsync(int countyId, string directory)
             {
                 if (!yearBuiltPredictionPipelineOptions.CleanScratchDirectory)
                 {
                     return;
                 }
 
-                try
+                // Not a failure of the county. What it wrote is written, and a scratch folder that cannot be
+                // removed costs disk space rather than correctness - reporting it as a failed step would make a
+                // finished county read as an unfinished one. DeleteDirectoryAsync retries a briefly held file and
+                // logs what is left when it still cannot.
+                if (!await DeleteDirectoryAsync(directory))
                 {
-                    if (Directory.Exists(directory))
-                    {
-                        Directory.Delete(directory, true);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    // Not a failure of the county. What it wrote is written, and a scratch folder that cannot be
-                    // removed costs disk space rather than correctness - reporting it as a failed step would make a
-                    // finished county read as an unfinished one.
-                    Serilog.Modify.Log(exception, "The scratch directory of county {CountyId} could not be removed - {Directory}", countyId, directory);
+                    Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Warning, "The scratch directory of county {CountyId} could not be removed - {Directory}", countyId, directory);
                 }
             }
 
@@ -156,6 +151,21 @@ namespace DiGi.GIS.YOLO.UI
             if (modelSHA256 is not null)
             {
                 messages.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Model SHA-256: {0} ({1})", modelSHA256, modelPath_Run));
+            }
+
+            // Refused rather than clamped the way BatchSize is: a chunk of one building would start the detector once per
+            // building, which for a large county is a hundred thousand starts of the interpreter (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+            int chunkSize = yearBuiltPredictionPipelineOptions.ChunkSize;
+            if (chunkSize < 1)
+            {
+                string message = string.Format(System.Globalization.CultureInfo.InvariantCulture, "ChunkSize is {0}. It is the largest number of buildings whose imagery one folder holds, and has to be at least one.", chunkSize);
+
+                messages.Add(message);
+                failedStepNames.Add(nameof(YearBuiltPredictionPipelineOptions.ChunkSize));
+
+                Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "{Method}: {Message}", nameof(RunYearBuiltPredictionsAsync), message);
+
+                return Result();
             }
 
             // Read before anything is fetched and refused rather than ignored when it does not read: a filter that quietly
@@ -437,33 +447,43 @@ namespace DiGi.GIS.YOLO.UI
 
                 string directory_County = Path.Combine(scratchDirectory, countyId.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 string directory_Images = Path.Combine(directory_County, Constants.DirectoryName.PredictionImages);
+                string directory_Chunks = Path.Combine(directory_County, Constants.DirectoryName.PredictionChunks);
                 string path_Results = Path.Combine(directory_County, Constants.FileName.PredictionResults);
 
                 try
                 {
-                    if (!Directory.Exists(directory_Images))
+                    // A county folder written before DiGi-Organization/DiGi.GIS.YOLO.UI#30 holds one flat image folder and no
+                    // chunks. With the export off there is nothing to re-split it from, so it is read the way it was written.
+                    // With the export on, the county is exported into chunks and the flat folder is left to the clean-up.
+                    bool flat = !yearBuiltPredictionPipelineOptions.ExportImages && Directory.Exists(directory_Images) && !Directory.Exists(directory_Chunks);
+
+                    // The markers of the chunks this run detected or stepped over, in chunk order. Null when the run did not
+                    // detect in chunks, and the scratch folder is then read for them instead.
+                    List<YearBuiltPredictionChunk>? yearBuiltPredictionChunks = null;
+
+                    List<Building2DYearBuiltPredictions>? building2DYearBuiltPredictions = null;
+                    bool read_Results = true;
+
+                    string? modelPath_Resolved = yearBuiltPredictionPipelineOptions.RunPrediction ? Query.ModelPath(yearBuiltPredictionPipelineOptions.ModelPath) : null;
+
+                    // The scripts are written beside the results when no working directory is named. That is the county folder,
+                    // as it was before the results moved into chunks, rather than the chunks folder the stale-chunk sweep clears.
+                    string workingDirectory = string.IsNullOrWhiteSpace(yearBuiltPredictionPipelineOptions.WorkingDirectory) ? directory_County : yearBuiltPredictionPipelineOptions.WorkingDirectory!;
+
+                    string ChunkName(int index)
                     {
-                        Directory.CreateDirectory(directory_Images);
+                        return index.ToString(Constants.FileName.PredictionChunkFormat, System.Globalization.CultureInfo.InvariantCulture);
                     }
 
-                    if (yearBuiltPredictionPipelineOptions.ExportImages)
+                    bool IsChunkName(string? name, out int index)
                     {
-                        bool exported = await gisWebAPIManager.ExportPredictionImagesAsync(countyId, directory_Images, maxConcurrentRequests, yearBuiltPredictionPipelineOptions.Resume, references: references_Filter, cancellationToken: cancellationToken);
-                        if (!exported)
-                        {
-                            Fail(nameof(ExportPredictionImagesAsync), countyId);
-                        }
+                        index = -1;
+                        return name is not null && name.Length == ChunkName(0).Length && int.TryParse(name, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out index);
                     }
 
-                    long imageCount_County = Directory.EnumerateFiles(directory_Images, "*.jpeg").LongCount();
-                    imageCount += imageCount_County;
-
-                    List<Building2DYearBuiltPredictions>? building2DYearBuiltPredictions;
-                    if (yearBuiltPredictionPipelineOptions.RunPrediction)
+                    if (flat && yearBuiltPredictionPipelineOptions.RunPrediction)
                     {
-                        string? modelPath_Resolved = Query.ModelPath(yearBuiltPredictionPipelineOptions.ModelPath);
-
-                        DiGi.YOLO.Classes.YOLOPredictionOptions? yOLOPredictionOptions = DiGi.YOLO.Create.YOLOPredictionOptions(yearBuiltPredictionPipelineOptions.PythonPath, modelPath_Resolved, directory_Images, path_Results, yearBuiltPredictionPipelineOptions.WorkingDirectory, yearBuiltPredictionPipelineOptions.Confidence);
+                        DiGi.YOLO.Classes.YOLOPredictionOptions? yOLOPredictionOptions = DiGi.YOLO.Create.YOLOPredictionOptions(yearBuiltPredictionPipelineOptions.PythonPath, modelPath_Resolved, directory_Images, path_Results, workingDirectory, yearBuiltPredictionPipelineOptions.Confidence);
                         if (yOLOPredictionOptions is null)
                         {
                             Fail(nameof(DiGi.YOLO.Create.YOLOPredictionOptions), countyId);
@@ -491,8 +511,240 @@ namespace DiGi.GIS.YOLO.UI
                         }
 
                         building2DYearBuiltPredictions = DiGi.GIS.YOLO.Create.Building2DYearBuiltPredictions(yOLOPredictionResult);
+                        read_Results = false;
                     }
-                    else
+                    else if (!flat && (yearBuiltPredictionPipelineOptions.ExportImages || yearBuiltPredictionPipelineOptions.RunPrediction))
+                    {
+                        // The county is split into chunks of at most ChunkSize buildings, each exported into a folder of its own
+                        // and scored there, so no folder ever holds a whole county. One folder of 1.4 million files collapsed
+                        // file creation from about 200 to about 7 images a second on a machine generating NTFS 8.3 names
+                        // (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
+                        List<PostgreSQL.Classes.OrtoDatasReference>? ortoDatasReferences = await Query.OrtoDatasReferencesAsync(gisWebAPIManager, countyId, postOptions_Item, cancellationToken);
+                        if (ortoDatasReferences is null)
+                        {
+                            Fail(nameof(Query.OrtoDatasReferencesAsync), countyId);
+                            continue;
+                        }
+
+                        if (ortoDatasReferences.Count == 0)
+                        {
+                            // Not a failure - a county genuinely may hold no imagery yet - but it is the shape a mis-scoped run
+                            // takes as well, and everything downstream of here then reports a legitimate zero.
+                            Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Warning, "No OrtoDatasReferences found for county {CountyId} - nothing will be exported, detected or scored for it", countyId);
+                        }
+
+                        Dictionary<string, PostgreSQL.Classes.OrtoDatasReference> ortoDatasReferences_ByReference = new(StringComparer.Ordinal);
+                        foreach (PostgreSQL.Classes.OrtoDatasReference ortoDatasReference in ortoDatasReferences)
+                        {
+                            if (ortoDatasReference?.Reference is not string reference || string.IsNullOrWhiteSpace(reference))
+                            {
+                                continue;
+                            }
+
+                            if (references_Filter is not null && !references_Filter.Contains(reference))
+                            {
+                                continue;
+                            }
+
+                            ortoDatasReferences_ByReference.TryAdd(reference, ortoDatasReference);
+                        }
+
+                        List<List<string>> references_Chunks = Query.PredictionChunks(ortoDatasReferences_ByReference.Keys, chunkSize);
+
+                        if (!Directory.Exists(directory_Chunks))
+                        {
+                            Directory.CreateDirectory(directory_Chunks);
+                        }
+
+                        if (yearBuiltPredictionPipelineOptions.RunPrediction)
+                        {
+                            // The county's results are rewritten only once every chunk is scored, so a run that stops part
+                            // way leaves no results file for a later score-only run to read as the whole county.
+                            if (File.Exists(path_Results))
+                            {
+                                File.Delete(path_Results);
+                            }
+
+                            // A chunk beyond the ones this run splits the county into is left from a run with a smaller
+                            // ChunkSize or a wider manifest, and its results would otherwise be read beside these.
+                            foreach (string path in Directory.EnumerateFileSystemEntries(directory_Chunks))
+                            {
+                                string name = Path.GetFileName(path);
+                                int index_Dot = name.IndexOf('.');
+                                string name_Index = index_Dot < 0 ? name : name[..index_Dot];
+
+                                if (!IsChunkName(name_Index, out int index) || index < references_Chunks.Count)
+                                {
+                                    continue;
+                                }
+
+                                if (Directory.Exists(path))
+                                {
+                                    await DeleteDirectoryAsync(path);
+                                }
+                                else
+                                {
+                                    File.Delete(path);
+                                }
+                            }
+
+                            yearBuiltPredictionChunks = [];
+                        }
+
+                        List<string> paths_ChunkResults = [];
+                        int chunkCount_Resumed = 0;
+                        bool failed_Chunk = false;
+
+                        for (int i = 0; i < references_Chunks.Count; i++)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            List<string> references_Chunk = references_Chunks[i];
+
+                            string directory_Chunk = Path.Combine(directory_Chunks, ChunkName(i));
+                            string path_Chunk = directory_Chunk + Constants.FileName.PredictionChunkExtension;
+                            string path_ChunkResults = directory_Chunk + Constants.FileName.PredictionChunkResultsExtension;
+
+                            paths_ChunkResults.Add(path_ChunkResults);
+
+                            if (yearBuiltPredictionPipelineOptions.RunPrediction && yearBuiltPredictionPipelineOptions.Resume)
+                            {
+                                YearBuiltPredictionChunk? yearBuiltPredictionChunk_Stored = Query.YearBuiltPredictionChunk(path_Chunk);
+                                if (yearBuiltPredictionChunk_Stored.IsResumable(references_Chunk, modelSHA256, yearBuiltPredictionPipelineOptions.Confidence) && (yearBuiltPredictionChunk_Stored!.ImageCount == 0 || File.Exists(path_ChunkResults)))
+                                {
+                                    yearBuiltPredictionChunks!.Add(yearBuiltPredictionChunk_Stored);
+                                    chunkCount_Resumed++;
+                                    continue;
+                                }
+                            }
+
+                            if (yearBuiltPredictionPipelineOptions.RunPrediction && File.Exists(path_Chunk))
+                            {
+                                File.Delete(path_Chunk);
+                            }
+
+                            if (Directory.Exists(directory_Chunk))
+                            {
+                                if (!yearBuiltPredictionPipelineOptions.Resume)
+                                {
+                                    await DeleteDirectoryAsync(directory_Chunk);
+                                }
+                                else
+                                {
+                                    // Kept so an export stopped part way resumes where it stopped, less any imagery of a building
+                                    // that is no longer in this chunk: the detector would score it here and in its own chunk.
+                                    HashSet<string> references_Chunk_Set = new(references_Chunk, StringComparer.Ordinal);
+                                    foreach (string path in Directory.EnumerateFiles(directory_Chunk))
+                                    {
+                                        if (!Query.TryParseImageFileName(path, out string? reference, out _) || reference is null || !references_Chunk_Set.Contains(reference))
+                                        {
+                                            File.Delete(path);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (yearBuiltPredictionPipelineOptions.ExportImages)
+                            {
+                                List<PostgreSQL.Classes.OrtoDatasReference> ortoDatasReferences_Chunk = [.. references_Chunk.Select(x => ortoDatasReferences_ByReference[x])];
+
+                                bool exported = await gisWebAPIManager.ExportPredictionImagesAsync(countyId, ortoDatasReferences_Chunk, directory_Chunk, maxConcurrentRequests, yearBuiltPredictionPipelineOptions.Resume, cancellationToken);
+                                if (!exported)
+                                {
+                                    Fail(nameof(ExportPredictionImagesAsync), countyId);
+                                }
+                            }
+                            else if (!Directory.Exists(directory_Chunk))
+                            {
+                                // Detecting an absent folder would record the chunk as scored with no imagery, and the detection
+                                // write would then clear every one of its buildings.
+                                string message = string.Format(System.Globalization.CultureInfo.InvariantCulture, "County {0} has no imagery for chunk {1} at {2}, and the export is off. Run the pipeline over the county with ExportImages set.", countyId, i, directory_Chunk);
+
+                                messages.Add(message);
+                                Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "{Method}: {Message}", nameof(RunYearBuiltPredictionsAsync), message);
+
+                                Fail(nameof(YearBuiltPredictionPipelineOptions.ExportImages), countyId);
+                                failed_Chunk = true;
+                                break;
+                            }
+
+                            if (!yearBuiltPredictionPipelineOptions.RunPrediction)
+                            {
+                                continue;
+                            }
+
+                            DiGi.YOLO.Classes.YOLOPredictionOptions? yOLOPredictionOptions = DiGi.YOLO.Create.YOLOPredictionOptions(yearBuiltPredictionPipelineOptions.PythonPath, modelPath_Resolved, directory_Chunk, path_ChunkResults, workingDirectory, yearBuiltPredictionPipelineOptions.Confidence);
+                            if (yOLOPredictionOptions is null)
+                            {
+                                Fail(nameof(DiGi.YOLO.Create.YOLOPredictionOptions), countyId);
+                                failed_Chunk = true;
+                                break;
+                            }
+
+                            DiGi.YOLO.Classes.YOLOPredictionResult? yOLOPredictionResult = DiGi.YOLO.Modify.Predict(yOLOPredictionOptions, cancellationToken);
+                            if (yOLOPredictionResult is null)
+                            {
+                                Fail(nameof(DiGi.YOLO.Modify.Predict), countyId);
+                                failed_Chunk = true;
+                                break;
+                            }
+
+                            // An empty chunk is not a failure - the script writes no output file at all, and there is simply
+                            // nothing in it to score.
+                            if (!yOLOPredictionResult.Succeeded && yOLOPredictionResult.ImageCount != 0)
+                            {
+                                if (yOLOPredictionResult.StandardError is List<string> standardError && standardError.Count != 0)
+                                {
+                                    messages.Add(string.Join("; ", standardError));
+                                }
+
+                                Fail(nameof(DiGi.YOLO.Modify.Predict), countyId);
+                                failed_Chunk = true;
+                                break;
+                            }
+
+                            // Read before the folder goes: once the marker is written, it is the only record of which buildings
+                            // the detector was handed imagery for.
+                            List<string> references_ScoredChunk = [.. Query.PredictionImageReferences(directory_Chunk).OrderBy(x => x, StringComparer.Ordinal)];
+
+                            YearBuiltPredictionChunk yearBuiltPredictionChunk = new(i, references_Chunk, references_ScoredChunk, yOLOPredictionResult.ImageCount, modelSHA256, yearBuiltPredictionPipelineOptions.Confidence, DateTimeOffset.Now);
+                            if (!yearBuiltPredictionChunk.WriteYearBuiltPredictionChunk(path_Chunk))
+                            {
+                                Fail(nameof(WriteYearBuiltPredictionChunk), countyId);
+                                failed_Chunk = true;
+                                break;
+                            }
+
+                            yearBuiltPredictionChunks!.Add(yearBuiltPredictionChunk);
+
+                            Serilog.Modify.Log("{Method}: county {CountyId} chunk {ChunkIndex} of {ChunkCount} - {ImageCount} images of {BuildingCount} buildings detected", nameof(RunYearBuiltPredictionsAsync), countyId, i + 1, references_Chunks.Count, yOLOPredictionResult.ImageCount, references_ScoredChunk.Count);
+
+                            // The bound holds while the run is going, not only once it has finished: a scored chunk's imagery
+                            // is removed as soon as its marker says so. A folder that cannot be removed costs disk only.
+                            if (yearBuiltPredictionPipelineOptions.CleanScratchDirectory)
+                            {
+                                await DeleteDirectoryAsync(directory_Chunk);
+                            }
+                        }
+
+                        if (failed_Chunk)
+                        {
+                            continue;
+                        }
+
+                        if (yearBuiltPredictionPipelineOptions.RunPrediction)
+                        {
+                            if (!AssemblePredictionResults(paths_ChunkResults, path_Results))
+                            {
+                                Fail(nameof(AssemblePredictionResults), countyId);
+                                continue;
+                            }
+
+                            Serilog.Modify.Log("{Method}: county {CountyId} - {ChunkCount} chunk(s) of at most {ChunkSize} buildings, {ResumedCount} stepped over as already detected", nameof(RunYearBuiltPredictionsAsync), countyId, references_Chunks.Count, chunkSize, chunkCount_Resumed);
+                        }
+                    }
+
+                    if (read_Results)
                     {
                         // With the detector off, the results file is the only record of which buildings it fired on -
                         // the stored detection columns are never read back for this. A county whose scratch folder was
@@ -513,6 +765,54 @@ namespace DiGi.GIS.YOLO.UI
                         building2DYearBuiltPredictions = DiGi.GIS.YOLO.Create.Building2DYearBuiltPredictions(DiGi.YOLO.Create.BoundingBoxResultFile(path_Results));
                     }
 
+                    // A run that did not detect in chunks reads the chunk markers an earlier one left; a county with none is a
+                    // flat folder written before DiGi-Organization/DiGi.GIS.YOLO.UI#30.
+                    if (yearBuiltPredictionChunks is null && Directory.Exists(directory_Chunks))
+                    {
+                        List<YearBuiltPredictionChunk> yearBuiltPredictionChunks_Stored = [];
+
+                        string name_Pattern = string.Concat("*", Constants.FileName.PredictionChunkExtension);
+                        foreach (string path in Directory.EnumerateFiles(directory_Chunks, name_Pattern).OrderBy(x => x, StringComparer.Ordinal))
+                        {
+                            if (!IsChunkName(Path.GetFileNameWithoutExtension(path), out _))
+                            {
+                                continue;
+                            }
+
+                            if (Query.YearBuiltPredictionChunk(path) is YearBuiltPredictionChunk yearBuiltPredictionChunk_Stored)
+                            {
+                                yearBuiltPredictionChunks_Stored.Add(yearBuiltPredictionChunk_Stored);
+                            }
+                        }
+
+                        if (yearBuiltPredictionChunks_Stored.Count != 0)
+                        {
+                            yearBuiltPredictionChunks = yearBuiltPredictionChunks_Stored;
+                        }
+                    }
+
+                    // Every building the detector was handed, fired on or not. The write replaces their detection columns
+                    // as a whole, so a building these weights do not fire on loses what earlier weights left on it rather
+                    // than keeping it beside this run's detections of its neighbours (DiGi-Organization/DiGi.GIS.YOLO.UI#21).
+                    // With chunks the image folders are gone by now, so the markers carry the set instead.
+                    HashSet<string> references_Scored = new(StringComparer.Ordinal);
+                    long imageCount_County = 0;
+                    if (yearBuiltPredictionChunks is not null)
+                    {
+                        foreach (YearBuiltPredictionChunk yearBuiltPredictionChunk in yearBuiltPredictionChunks)
+                        {
+                            references_Scored.UnionWith(yearBuiltPredictionChunk.ScoredReferences ?? []);
+                            imageCount_County += yearBuiltPredictionChunk.ImageCount;
+                        }
+                    }
+                    else
+                    {
+                        references_Scored = Query.PredictionImageReferences(directory_Images);
+                        imageCount_County = Directory.Exists(directory_Images) ? Directory.EnumerateFiles(directory_Images, "*.jpeg").LongCount() : 0;
+                    }
+
+                    imageCount += imageCount_County;
+
                     // The folder may still hold imagery of buildings outside the filter from an earlier, wider run of the
                     // same scratch directory; the detector scored it too, but the run was asked about these buildings only.
                     if (references_Filter is not null && building2DYearBuiltPredictions is not null)
@@ -520,10 +820,6 @@ namespace DiGi.GIS.YOLO.UI
                         building2DYearBuiltPredictions = [.. building2DYearBuiltPredictions.Where(x => x?.Reference is string reference && references_Filter.Contains(reference))];
                     }
 
-                    // Every building the detector was handed, fired on or not. The write replaces their detection columns
-                    // as a whole, so a building these weights do not fire on loses what earlier weights left on it rather
-                    // than keeping it beside this run's detections of its neighbours (DiGi-Organization/DiGi.GIS.YOLO.UI#21).
-                    HashSet<string> references_Scored = Query.PredictionImageReferences(directory_Images);
                     if (references_Filter is not null)
                     {
                         references_Scored.IntersectWith(references_Filter);
@@ -859,7 +1155,7 @@ namespace DiGi.GIS.YOLO.UI
                     // reproducible, and it fires only after both of those steps have already been paid for.
                     if (!failed_County)
                     {
-                        CleanScratch(countyId, directory_County);
+                        await CleanScratchAsync(countyId, directory_County);
                     }
                 }
 
