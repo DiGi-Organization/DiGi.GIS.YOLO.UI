@@ -106,7 +106,7 @@ namespace DiGi.GIS.YOLO.UI
                     continue;
                 }
 
-                string? sHA256 = DiGi.YOLO.Query.FileSHA256(path_Weights);
+                string? sHA256 = Python.Query.FileSHA256(path_Weights);
 
                 string path_Results = Path.Combine(directory_Evaluation, string.Format(CultureInfo.InvariantCulture, "{0:00}_{1}.bbrf", i, Path.GetFileNameWithoutExtension(path_Weights)));
 

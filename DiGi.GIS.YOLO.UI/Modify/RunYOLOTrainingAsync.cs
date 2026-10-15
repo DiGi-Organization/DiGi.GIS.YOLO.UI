@@ -263,7 +263,7 @@ namespace DiGi.GIS.YOLO.UI
                     }
                     else
                     {
-                        startWeightsSHA256 = DiGi.YOLO.Query.FileSHA256(startWeightsPath);
+                        startWeightsSHA256 = Python.Query.FileSHA256(startWeightsPath);
                         Report(string.Format(CultureInfo.InvariantCulture, "Start weights {0} SHA256 {1}", startWeightsPath, startWeightsSHA256 ?? "(unreadable)"));
                     }
                 }
@@ -394,7 +394,7 @@ namespace DiGi.GIS.YOLO.UI
                     // The resume is certain from here on: it is recorded even if the training then fails.
                     resumed = true;
                     resumedFromEpoch = yOLOCheckpointInformation.Epoch + 1;
-                    startWeightsSHA256 = DiGi.YOLO.Query.FileSHA256(startWeightsPath);
+                    startWeightsSHA256 = Python.Query.FileSHA256(startWeightsPath);
                     Report(string.Format(CultureInfo.InvariantCulture, "Resuming {0} from epoch {1} of {2}, {3} SHA256 {4}", runName, resumedFromEpoch?.ToString(CultureInfo.InvariantCulture) ?? "(unknown)", yOLOCheckpointInformation.Epochs?.ToString(CultureInfo.InvariantCulture) ?? "(unknown)", startWeightsPath, startWeightsSHA256 ?? "(unreadable)"));
                 }
             }
@@ -660,7 +660,7 @@ namespace DiGi.GIS.YOLO.UI
                         return Result();
                     }
 
-                    weightsSHA256 = DiGi.YOLO.Query.FileSHA256(path_Weights);
+                    weightsSHA256 = Python.Query.FileSHA256(path_Weights);
                     if (!string.Equals(weightsSHA256, yOLOTrainingResult_Success.SHA256, StringComparison.OrdinalIgnoreCase))
                     {
                         Fail(Query.YOLOTrainingStepName(YOLOTrainingStep.Train), string.Format(CultureInfo.InvariantCulture, "The copy {0} does not match the weights the training reported ({1} against {2}).", path_Weights, weightsSHA256, yOLOTrainingResult_Success.SHA256));

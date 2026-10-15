@@ -142,7 +142,7 @@ namespace DiGi.GIS.YOLO.UI
             // The identity of the weights, hashed once: stored detections carry only the run stamp, so the log line is what
             // ties a run to the detector that produced it - a file name says nothing once model.pt is replaced in place.
             string? modelPath_Run = yearBuiltPredictionPipelineOptions.RunPrediction ? Query.ModelPath(yearBuiltPredictionPipelineOptions.ModelPath) : null;
-            string? modelSHA256 = DiGi.YOLO.Query.FileSHA256(modelPath_Run);
+            string? modelSHA256 = Python.Query.FileSHA256(modelPath_Run);
 
             Serilog.Modify.Log(
                 "{Method} started: {CountyCount} counties, scratch {ScratchDirectory}, export {ExportImages}, predict {RunPrediction}, score {Score}, write detections {UpdateDetections}, write year built data {UpdateYearBuiltData}, write predicted year {UpdatePredictedYearBuilt}, model {ModelPath} SHA-256 {ModelSHA256}",
