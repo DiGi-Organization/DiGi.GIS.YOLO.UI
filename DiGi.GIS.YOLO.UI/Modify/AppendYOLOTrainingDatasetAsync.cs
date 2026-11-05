@@ -23,11 +23,12 @@ namespace DiGi.GIS.YOLO.UI
         /// <summary>
         /// Builds a YOLO training dataset of every labelled building of the named county parts from the deployed data: labels from the building data, footprints and orthophotos from their tables, read through the Web API.
         /// <para><b>Labels.</b> The stored <c>User year built</c> column (<see cref="Query.UserYearBuiltsAsync"/>) - the same exact user year the Year Built regressor trains on. A building without one is not in the dataset. A reference filed under several named county parts is built once, under the lowest identifier.</para>
+        /// <para><b>Exclusion.</b> When <see cref="YOLOTrainingDatasetOptions.ExclusionBoundingBoxes"/> names any box, the footprints are read before the split and every building whose footprint envelope - grown by <see cref="YOLOTrainingDatasetOptions.ExclusionBuffer"/> on every side - touches or crosses a box is dropped there and then: it leaves the Train, Validate and Test splits alike, so no crop of the areas under test is ever trained on, tuned on or gated against. The drop is counted per county part in <see cref="YOLOTrainingDatasetCount.ExcludedCount"/> and printed by <c>CountOnly</c>. An empty list reads no footprint for the check and keeps the run exactly as it was; a footprint that cannot be read refuses the run rather than passing the check unchecked.</para>
         /// <para><b>Split.</b> A reference <see cref="GIS.IO.Query.Holdout(string?, int)"/> holds out goes to Test and only there - the same buildings the regressor holds out. The rest, sorted ordinally, are split by a seeded draw into Validate (<see cref="YOLOTrainingDatasetOptions.ValidateWeight"/>) and Train, so the same labels and seed give the same split.</para>
         /// <para><b>Images.</b> One per orthophoto year - the first of a year in date order - saved by <see cref="SavePredictionImage"/>, the encoder the inference export uses, as <c>{reference}_{year}.jpeg</c>. A year at or after the label carries one box of class <c>Building</c> (index 0): the footprint&apos;s bounding box grown by <see cref="YOLOTrainingDatasetOptions.Offset"/>, projected onto the image and clamped to it (<see cref="Query.PixelBoundingBox"/>). A year before the label is kept with an empty label file - it teaches the boundary. A positive year whose box has no area inside the image is not written at all. Identical photo bytes under two years are kept once when their labels agree and dropped when they conflict.</para>
         /// <para><b>Legacy.</b> Each Test building is checked against the two records of what the lost <c>train8</c> dataset held (<see cref="Query.LegacySource"/>), so the detector evaluation can report a subset <c>train8</c> cannot have seen. A county part whose stored history cannot be read in full has the decision refused for all of its Test buildings - they are <see cref="LegacySource.Unknown"/>, never clean.</para>
         /// <para><b>Resume.</b> The <c>dataset_references.tsv</c> manifest is a journal: a building&apos;s images and label files are written first and its row appended after, so a building the manifest names is complete and is skipped, and the files of one it does not name - left half-written by a stopped run - are removed and rebuilt. <c>conf.yaml</c> is written before the first building and again at the end.</para>
-        /// <para><b>CountOnly</b> stops before any orthophoto is requested and reports, per county part, the labelled buildings, the split, the Legacy agreement table and bounded entries of the Test buildings, the cross-part reference duplicates and an estimate of a build&apos;s size.</para>
+        /// <para><b>CountOnly</b> stops before any orthophoto is requested and reports, per county part, the labelled buildings, the exclusion, the split, the Legacy agreement table and bounded entries of the Test buildings, the cross-part reference duplicates and an estimate of a build&apos;s size.</para>
         /// <para>A building that fails is logged and stepped over; a county part whose labels cannot be read is refused while the others are built. <see cref="YOLOTrainingDatasetResult.FailedStepNames"/> is what says whether the run did everything it set out to do.</para>
         /// </summary>
         /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
@@ -228,6 +229,78 @@ namespace DiGi.GIS.YOLO.UI
                 }
             }
 
+            // Exclusion, before the split: a building whose footprint envelope, grown by ExclusionBuffer, touches or
+            // crosses an exclusion bounding box leaves every split, so no crop of the areas under test enters Train,
+            // Validate or Test. An empty list reads no footprint for the check and keeps the run exactly as it was.
+            List<YOLOExclusionBoundingBox> exclusionBoundingBoxes = [];
+            if (yOLOTrainingDatasetOptions.ExclusionBoundingBoxes is not null)
+            {
+                foreach (YOLOExclusionBoundingBox? yOLOExclusionBoundingBox in yOLOTrainingDatasetOptions.ExclusionBoundingBoxes)
+                {
+                    if (yOLOExclusionBoundingBox is not null)
+                    {
+                        exclusionBoundingBoxes.Add(yOLOExclusionBoundingBox);
+                    }
+                }
+            }
+
+            if (exclusionBoundingBoxes.Count != 0)
+            {
+                double exclusionBuffer = yOLOTrainingDatasetOptions.ExclusionBuffer;
+                List<string> references_Excluded = [];
+                foreach (int countyId in countyIds_Labelled)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    List<string> references_County = [.. labels.Where(x => x.Value.CountyId == countyId).Select(x => x.Key).OrderBy(x => x, StringComparer.Ordinal)];
+                    if (references_County.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    // A read that cannot even start is refused rather than passed: a county whose footprints were not
+                    // read could carry a crop of the areas under test into every split.
+                    Dictionary<string, Building2D>? building2Ds = await Query.Building2DsAsync(gisWebAPIManager, countyId, references_County, referenceBatchSize, postOptions_Bulk, cancellationToken);
+                    if (building2Ds is null)
+                    {
+                        Fail(nameof(Query.Building2DsAsync), string.Format(CultureInfo.InvariantCulture, "The exclusion footprints of county {0} could not be read - the exclusion could not be checked, so no dataset is built.", countyId));
+                        return Result();
+                    }
+
+                    foreach (string reference in references_County)
+                    {
+                        if (!building2Ds.TryGetValue(reference, out Building2D? building2D) || building2D is null)
+                        {
+                            // Nothing can be built from a reference without a footprint either - the build counts it as
+                            // WithoutFootprintCount - so it stays in the split, exactly as it was counted before.
+                            continue;
+                        }
+
+                        BoundingBox2D? boundingBox2D = GIS.Create.Building2DGeometryCalculationResult(building2D)?.BoundingBox;
+                        if (Query.IsExcluded(boundingBox2D, exclusionBoundingBoxes, exclusionBuffer))
+                        {
+                            references_Excluded.Add(reference);
+                        }
+                    }
+                }
+
+                foreach (string reference in references_Excluded)
+                {
+                    if (!labels.TryGetValue(reference, out (int CountyId, short Label) label))
+                    {
+                        continue;
+                    }
+
+                    labels.Remove(reference);
+                    yOLOTrainingDatasetCounts[label.CountyId].ExcludedCount++;
+                }
+
+                if (references_Excluded.Count != 0)
+                {
+                    Serilog.Modify.Log("{Method}: {ExcludedCount} building(s) touch an exclusion bounding box (plus buffer) and leave every split", nameof(AppendYOLOTrainingDatasetAsync), references_Excluded.Count);
+                }
+            }
+
             // The split. Holdout is a hash of the reference, so it is the same whatever else is in the dataset; the
             // Train / Validate draw runs over the ordinally sorted rest, one draw per reference.
             Dictionary<string, Category> categories = new(StringComparer.Ordinal);
@@ -401,7 +474,12 @@ namespace DiGi.GIS.YOLO.UI
                 {
                     long buildingCount = yOLOTrainingDatasetCount.BuildingCount;
 
-                    yOLOTrainingDatasetCount.EstimatedRequestCount = buildingCount + ((buildingCount + referenceBatchSize - 1) / referenceBatchSize);
+                    long footprintPageCount = (buildingCount + referenceBatchSize - 1) / referenceBatchSize;
+                    // With an exclusion box named, the footprints are read for the check before the split as well -
+                    // over the buildings the split keeps plus the ones the check drops - so their pages are counted
+                    // too. An empty list adds no read, so the estimate stays exactly as it was.
+                    long exclusionPageCount = (buildingCount + yOLOTrainingDatasetCount.ExcludedCount + referenceBatchSize - 1) / referenceBatchSize;
+                    yOLOTrainingDatasetCount.EstimatedRequestCount = buildingCount + footprintPageCount + (exclusionBoundingBoxes.Count == 0 ? 0 : exclusionPageCount);
                     yOLOTrainingDatasetCount.EstimatedImageCount = buildingCount * Constants.Count.ImagePerBuilding_Estimate;
                     yOLOTrainingDatasetCount.EstimatedByteCount = yOLOTrainingDatasetCount.EstimatedImageCount * Constants.Count.ImageByte_Estimate;
                 }

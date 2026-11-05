@@ -348,7 +348,7 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                     Notes(result.Messages);
 
                     Console.WriteLine(result.CountOnly ? "[INFO] Count only - no orthophoto was requested and nothing was written." : $"[INFO] Dataset: {result.OutputDirectory}");
-                    Console.WriteLine("County\tLabelled\tDuplicates\tConflicts\tBuildings\tTrain\tValidate\tTest\tLegacyTsv\tLegacyTimestamp\tLegacyBoth\tLegacyNone\tLegacyUnknown\tBounded\tRefDuplicates\tEstRequests\tEstImages\tEstBytes\tResumed\tNoFootprint\tNoImagery\tFailed\tImages\tPositive\tNegative\tClamped\tDroppedBoxes\tSameYear\tIdenticalDropped\tIdenticalMerged");
+                    Console.WriteLine("County\tLabelled\tDuplicates\tConflicts\tExcluded\tBuildings\tTrain\tValidate\tTest\tLegacyTsv\tLegacyTimestamp\tLegacyBoth\tLegacyNone\tLegacyUnknown\tBounded\tRefDuplicates\tEstRequests\tEstImages\tEstBytes\tResumed\tNoFootprint\tNoImagery\tFailed\tImages\tPositive\tNegative\tClamped\tDroppedBoxes\tSameYear\tIdenticalDropped\tIdenticalMerged");
 
                     List<YOLOTrainingDatasetCount> yOLOTrainingDatasetCounts = result.YOLOTrainingDatasetCounts;
                     if (result.Total is YOLOTrainingDatasetCount total)
@@ -363,6 +363,7 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                             yOLOTrainingDatasetCount.LabelledCount,
                             yOLOTrainingDatasetCount.DuplicateReferenceCount,
                             yOLOTrainingDatasetCount.LabelConflictCount,
+                            yOLOTrainingDatasetCount.ExcludedCount,
                             yOLOTrainingDatasetCount.BuildingCount,
                             yOLOTrainingDatasetCount.TrainCount,
                             yOLOTrainingDatasetCount.ValidateCount,

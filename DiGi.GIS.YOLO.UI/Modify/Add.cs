@@ -23,6 +23,7 @@ namespace DiGi.GIS.YOLO.UI
             yOLOTrainingDatasetCount.ClampedBoxCount += yOLOTrainingDatasetCount_Add.ClampedBoxCount;
             yOLOTrainingDatasetCount.DroppedBoxCount += yOLOTrainingDatasetCount_Add.DroppedBoxCount;
             yOLOTrainingDatasetCount.DuplicateReferenceCount += yOLOTrainingDatasetCount_Add.DuplicateReferenceCount;
+            yOLOTrainingDatasetCount.ExcludedCount += yOLOTrainingDatasetCount_Add.ExcludedCount;
             yOLOTrainingDatasetCount.EstimatedByteCount += yOLOTrainingDatasetCount_Add.EstimatedByteCount;
             yOLOTrainingDatasetCount.EstimatedImageCount += yOLOTrainingDatasetCount_Add.EstimatedImageCount;
             yOLOTrainingDatasetCount.EstimatedRequestCount += yOLOTrainingDatasetCount_Add.EstimatedRequestCount;

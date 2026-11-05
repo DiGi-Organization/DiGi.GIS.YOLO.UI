@@ -7,7 +7,7 @@ namespace DiGi.GIS.YOLO.UI.Classes
 {
     /// <summary>
     /// The tallies of a YOLO training dataset build, for one county part or for the whole run.
-    /// <para>The counting half - labelled buildings, the split, the Legacy agreement table, bounded entries, cross-part duplicates and the estimates - is filled by a <c>CountOnly</c> run as well as by a build; the building half - images, boxes, skipped and failed buildings - only by a build.</para>
+    /// <para>The counting half - labelled buildings, the exclusion, the split, the Legacy agreement table, bounded entries, cross-part duplicates and the estimates - is filled by a <c>CountOnly</c> run as well as by a build; the building half - images, boxes, skipped and failed buildings - only by a build.</para>
     /// <para>The Legacy counts cover the Test buildings only: the clean subset of the detector evaluation is Test and not Legacy, and a Train or Validate building&apos;s Legacy decision feeds no metric.</para>
     /// </summary>
     public class YOLOTrainingDatasetCount : SerializableObject, IGISYOLOUISerializableObject
@@ -36,6 +36,7 @@ namespace DiGi.GIS.YOLO.UI.Classes
                 CountyId = yOLOTrainingDatasetCount.CountyId;
                 DroppedBoxCount = yOLOTrainingDatasetCount.DroppedBoxCount;
                 DuplicateReferenceCount = yOLOTrainingDatasetCount.DuplicateReferenceCount;
+                ExcludedCount = yOLOTrainingDatasetCount.ExcludedCount;
                 EstimatedByteCount = yOLOTrainingDatasetCount.EstimatedByteCount;
                 EstimatedImageCount = yOLOTrainingDatasetCount.EstimatedImageCount;
                 EstimatedRequestCount = yOLOTrainingDatasetCount.EstimatedRequestCount;
@@ -112,6 +113,13 @@ namespace DiGi.GIS.YOLO.UI.Classes
         public long DuplicateReferenceCount { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of buildings dropped before the split because their footprint envelope, grown by <see cref="YOLOTrainingDatasetOptions.ExclusionBuffer"/>, touches or crosses an <see cref="YOLOTrainingDatasetOptions.ExclusionBoundingBoxes"/> box.
+        /// <para>They leave the Train, Validate and Test splits alike, so the count says how much of the county part stayed out of training. Zero whenever no exclusion box is named.</para>
+        /// </summary>
+        [JsonInclude, JsonPropertyName(nameof(ExcludedCount))]
+        public long ExcludedCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the estimated disk space, in bytes, a build would take, from an assumed size per image.
         /// </summary>
         [JsonInclude, JsonPropertyName(nameof(EstimatedByteCount))]
@@ -124,7 +132,7 @@ namespace DiGi.GIS.YOLO.UI.Classes
         public long EstimatedImageCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the estimated number of Web API requests a build would make: one orthophoto read per building, plus the paged footprint reads.
+        /// Gets or sets the estimated number of Web API requests a build would make: one orthophoto read per building, plus the paged footprint reads - and, when an <see cref="YOLOTrainingDatasetOptions.ExclusionBoundingBoxes"/> box is named, the pages of the exclusion&apos;s own footprint read before the split as well.
         /// </summary>
         [JsonInclude, JsonPropertyName(nameof(EstimatedRequestCount))]
         public long EstimatedRequestCount { get; set; }

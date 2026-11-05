@@ -34,6 +34,8 @@ namespace DiGi.GIS.YOLO.UI.Classes
                 Confidence = yOLOTrainingDatasetOptions.Confidence;
                 CountOnly = yOLOTrainingDatasetOptions.CountOnly;
                 CountyIds = yOLOTrainingDatasetOptions.CountyIds is null ? null : [.. yOLOTrainingDatasetOptions.CountyIds];
+                ExclusionBoundingBoxes = yOLOTrainingDatasetOptions.ExclusionBoundingBoxes is null ? null : [.. yOLOTrainingDatasetOptions.ExclusionBoundingBoxes];
+                ExclusionBuffer = yOLOTrainingDatasetOptions.ExclusionBuffer;
                 HoldoutDenominator = yOLOTrainingDatasetOptions.HoldoutDenominator;
                 LabelCheckOverlayCount = yOLOTrainingDatasetOptions.LabelCheckOverlayCount;
                 LabelCheckSampleSize = yOLOTrainingDatasetOptions.LabelCheckSampleSize;
@@ -86,6 +88,20 @@ namespace DiGi.GIS.YOLO.UI.Classes
         /// </summary>
         [JsonInclude, JsonPropertyName(nameof(CountyIds))]
         public HashSet<int>? CountyIds { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets the areas kept out of the dataset: axis-aligned boxes in EPSG:2180 whose neighbourhood - the box grown by <see cref="ExclusionBuffer"/> on every side - must never be trained on, tuned on or gated against. A building whose footprint envelope touches or crosses any of them is dropped before the holdout and the seeded split, leaves the Train, Validate and Test splits alike, and is counted per county part in <see cref="YOLOTrainingDatasetCount.ExcludedCount"/>.
+        /// <para>The default is an empty list: nothing is excluded and the build behaves exactly as it did before the option existed. The boxes come from the areas under test at run time - this option only carries them.</para>
+        /// </summary>
+        [JsonInclude, JsonPropertyName(nameof(ExclusionBoundingBoxes))]
+        public List<YOLOExclusionBoundingBox>? ExclusionBoundingBoxes { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the distance, in metres, every <see cref="ExclusionBoundingBoxes"/> box is grown by on every side - the neighbourhood of the pilot test areas that has to stay out of training, tunable to the margin the study needs.
+        /// <para>The default, 100, keeps a hundred metre margin around every box; 0 excludes the boxes exactly as drawn, and an edge that only touches a grown envelope still counts as inside.</para>
+        /// </summary>
+        [JsonInclude, JsonPropertyName(nameof(ExclusionBuffer))]
+        public double ExclusionBuffer { get; set; } = 100;
 
         /// <summary>
         /// Gets or sets the holdout rate as one in how many references: a reference is held out when <see cref="GIS.IO.Query.Holdout(string?, int)"/> says so, and a held-out reference goes to the Test split only.

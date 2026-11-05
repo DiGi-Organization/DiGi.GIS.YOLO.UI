@@ -1492,6 +1492,145 @@ public System.Collections.Generic.List<DiGi.GIS.YOLO.UI.Classes.YOLODetectorEval
 #### Property Value
 [System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[YOLODetectorEvaluation](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLODetectorEvaluation 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLODetectorEvaluation')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')
 
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox'></a>
+
+## YOLOExclusionBoundingBox Class
+
+One area kept out of a YOLO training dataset: an axis\-aligned bounding box in EPSG:2180, named by [ExclusionBoundingBoxes](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBoundingBoxes 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBoundingBoxes') and grown by [ExclusionBuffer](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBuffer 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBuffer') before every intersection test\.
+
+The coordinates are stored as given; the intersection test reads the area between them, so a corner pair supplied in any order still names the same box.
+
+```csharp
+public class YOLOExclusionBoundingBox : DiGi.Core.Classes.SerializableObject, DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUISerializableObject, DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUIObject, DiGi.Core.Interfaces.IObject, DiGi.Core.Interfaces.ISerializableObject, DiGi.Core.Interfaces.ICloneableObject<DiGi.Core.Interfaces.ISerializableObject>, DiGi.Core.Interfaces.ICloneableObject
+```
+
+Inheritance [System\.Object](https://learn.microsoft.com/en-us/dotnet/api/system.object 'System\.Object') → [DiGi\.Core\.Classes\.Object](https://learn.microsoft.com/en-us/dotnet/api/digi.core.classes.object 'DiGi\.Core\.Classes\.Object') → [DiGi\.Core\.Classes\.SerializableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.classes.serializableobject 'DiGi\.Core\.Classes\.SerializableObject') → YOLOExclusionBoundingBox
+
+Implements [IGISYOLOUISerializableObject](DiGi.GIS.YOLO.UI.Interfaces.md#DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUISerializableObject 'DiGi\.GIS\.YOLO\.UI\.Interfaces\.IGISYOLOUISerializableObject'), [IGISYOLOUIObject](DiGi.GIS.YOLO.UI.Interfaces.md#DiGi.GIS.YOLO.UI.Interfaces.IGISYOLOUIObject 'DiGi\.GIS\.YOLO\.UI\.Interfaces\.IGISYOLOUIObject'), [DiGi\.Core\.Interfaces\.IObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.iobject 'DiGi\.Core\.Interfaces\.IObject'), [DiGi\.Core\.Interfaces\.ISerializableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.iserializableobject 'DiGi\.Core\.Interfaces\.ISerializableObject'), [DiGi\.Core\.Interfaces\.ICloneableObject&lt;](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.icloneableobject-1 'DiGi\.Core\.Interfaces\.ICloneableObject\`1')[DiGi\.Core\.Interfaces\.ISerializableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.iserializableobject 'DiGi\.Core\.Interfaces\.ISerializableObject')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.icloneableobject-1 'DiGi\.Core\.Interfaces\.ICloneableObject\`1'), [DiGi\.Core\.Interfaces\.ICloneableObject](https://learn.microsoft.com/en-us/dotnet/api/digi.core.interfaces.icloneableobject 'DiGi\.Core\.Interfaces\.ICloneableObject')
+### Constructors
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox)'></a>
+
+## YOLOExclusionBoundingBox\(YOLOExclusionBoundingBox\) Constructor
+
+Initializes a new instance of the [YOLOExclusionBoundingBox](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOExclusionBoundingBox') class by copying an existing one\.
+
+```csharp
+public YOLOExclusionBoundingBox(DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox? yOLOExclusionBoundingBox);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox).yOLOExclusionBoundingBox'></a>
+
+`yOLOExclusionBoundingBox` [YOLOExclusionBoundingBox](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOExclusionBoundingBox')
+
+The [YOLOExclusionBoundingBox](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOExclusionBoundingBox') to copy from\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(double,double,double,double)'></a>
+
+## YOLOExclusionBoundingBox\(double, double, double, double\) Constructor
+
+Initializes a new instance of the [YOLOExclusionBoundingBox](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOExclusionBoundingBox') class from its corner coordinates in EPSG:2180\.
+
+```csharp
+public YOLOExclusionBoundingBox(double minX, double minY, double maxX, double maxY);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(double,double,double,double).minX'></a>
+
+`minX` [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+The minimum easting\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(double,double,double,double).minY'></a>
+
+`minY` [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+The minimum northing\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(double,double,double,double).maxX'></a>
+
+`maxX` [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+The maximum easting\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(double,double,double,double).maxY'></a>
+
+`maxY` [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+The maximum northing\.
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(System.Text.Json.Nodes.JsonObject)'></a>
+
+## YOLOExclusionBoundingBox\(JsonObject\) Constructor
+
+Initializes a new instance of the [YOLOExclusionBoundingBox](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOExclusionBoundingBox') class from a [System\.Text\.Json\.Nodes\.JsonObject](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonobject 'System\.Text\.Json\.Nodes\.JsonObject')\.
+
+```csharp
+public YOLOExclusionBoundingBox(System.Text.Json.Nodes.JsonObject? jsonObject);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.YOLOExclusionBoundingBox(System.Text.Json.Nodes.JsonObject).jsonObject'></a>
+
+`jsonObject` [System\.Text\.Json\.Nodes\.JsonObject](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonobject 'System\.Text\.Json\.Nodes\.JsonObject')
+
+The [System\.Text\.Json\.Nodes\.JsonObject](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonobject 'System\.Text\.Json\.Nodes\.JsonObject') containing the serialized data\.
+### Properties
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.MaxX'></a>
+
+## YOLOExclusionBoundingBox\.MaxX Property
+
+Gets the maximum easting\.
+
+```csharp
+public double MaxX { get; }
+```
+
+#### Property Value
+[System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.MaxY'></a>
+
+## YOLOExclusionBoundingBox\.MaxY Property
+
+Gets the maximum northing\.
+
+```csharp
+public double MaxY { get; }
+```
+
+#### Property Value
+[System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.MinX'></a>
+
+## YOLOExclusionBoundingBox\.MinX Property
+
+Gets the minimum easting\.
+
+```csharp
+public double MinX { get; }
+```
+
+#### Property Value
+[System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox.MinY'></a>
+
+## YOLOExclusionBoundingBox\.MinY Property
+
+Gets the minimum northing\.
+
+```csharp
+public double MinY { get; }
+```
+
+#### Property Value
+[System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
 <a name='DiGi.GIS.YOLO.UI.Classes.YOLOLabelCheckResult'></a>
 
 ## YOLOLabelCheckResult Class
@@ -1911,7 +2050,7 @@ public System.DateTimeOffset Time { get; }
 
 The tallies of a YOLO training dataset build, for one county part or for the whole run\.
 
-The counting half - labelled buildings, the split, the Legacy agreement table, bounded entries, cross-part duplicates and the estimates - is filled by a `CountOnly` run as well as by a build; the building half - images, boxes, skipped and failed buildings - only by a build.
+The counting half - labelled buildings, the exclusion, the split, the Legacy agreement table, bounded entries, cross-part duplicates and the estimates - is filled by a `CountOnly` run as well as by a build; the building half - images, boxes, skipped and failed buildings - only by a build.
 
 The Legacy counts cover the Test buildings only: the clean subset of the detector evaluation is Test and not Legacy, and a Train or Validate building's Legacy decision feeds no metric.
 
@@ -2090,10 +2229,25 @@ public long EstimatedImageCount { get; set; }
 
 ## YOLOTrainingDatasetCount\.EstimatedRequestCount Property
 
-Gets or sets the estimated number of Web API requests a build would make: one orthophoto read per building, plus the paged footprint reads\.
+Gets or sets the estimated number of Web API requests a build would make: one orthophoto read per building, plus the paged footprint reads \- and, when an [ExclusionBoundingBoxes](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBoundingBoxes 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBoundingBoxes') box is named, the pages of the exclusion's own footprint read before the split as well\.
 
 ```csharp
 public long EstimatedRequestCount { get; set; }
+```
+
+#### Property Value
+[System\.Int64](https://learn.microsoft.com/en-us/dotnet/api/system.int64 'System\.Int64')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetCount.ExcludedCount'></a>
+
+## YOLOTrainingDatasetCount\.ExcludedCount Property
+
+Gets or sets the number of buildings dropped before the split because their footprint envelope, grown by [ExclusionBuffer](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBuffer 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBuffer'), touches or crosses an [ExclusionBoundingBoxes](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBoundingBoxes 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBoundingBoxes') box\.
+
+They leave the Train, Validate and Test splits alike, so the count says how much of the county part stayed out of training. Zero whenever no exclusion box is named.
+
+```csharp
+public long ExcludedCount { get; set; }
 ```
 
 #### Property Value
@@ -2494,6 +2648,36 @@ public System.Collections.Generic.HashSet<int>? CountyIds { get; set; }
 
 #### Property Value
 [System\.Collections\.Generic\.HashSet&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1 'System\.Collections\.Generic\.HashSet\`1')[System\.Int32](https://learn.microsoft.com/en-us/dotnet/api/system.int32 'System\.Int32')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1 'System\.Collections\.Generic\.HashSet\`1')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBoundingBoxes'></a>
+
+## YOLOTrainingDatasetOptions\.ExclusionBoundingBoxes Property
+
+Gets or sets the areas kept out of the dataset: axis\-aligned boxes in EPSG:2180 whose neighbourhood \- the box grown by [ExclusionBuffer](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBuffer 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBuffer') on every side \- must never be trained on, tuned on or gated against\. A building whose footprint envelope touches or crosses any of them is dropped before the holdout and the seeded split, leaves the Train, Validate and Test splits alike, and is counted per county part in [ExcludedCount](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetCount.ExcludedCount 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetCount\.ExcludedCount')\.
+
+The default is an empty list: nothing is excluded and the build behaves exactly as it did before the option existed. The boxes come from the areas under test at run time - this option only carries them.
+
+```csharp
+public System.Collections.Generic.List<DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox>? ExclusionBoundingBoxes { get; set; }
+```
+
+#### Property Value
+[System\.Collections\.Generic\.List&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')[YOLOExclusionBoundingBox](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOExclusionBoundingBox')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1 'System\.Collections\.Generic\.List\`1')
+
+<a name='DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBuffer'></a>
+
+## YOLOTrainingDatasetOptions\.ExclusionBuffer Property
+
+Gets or sets the distance, in metres, every [ExclusionBoundingBoxes](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBoundingBoxes 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBoundingBoxes') box is grown by on every side \- the neighbourhood of the pilot test areas that has to stay out of training, tunable to the margin the study needs\.
+
+The default, 100, keeps a hundred metre margin around every box; 0 excludes the boxes exactly as drawn, and an edge that only touches a grown envelope still counts as inside.
+
+```csharp
+public double ExclusionBuffer { get; set; }
+```
+
+#### Property Value
+[System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
 
 <a name='DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.HoldoutDenominator'></a>
 

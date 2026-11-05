@@ -189,6 +189,8 @@ Builds a YOLO training dataset of every labelled building of the named county pa
 
 <b>Labels.</b> The stored `User year built` column ([UserYearBuiltsAsync\(this GISWebAPIManager, int, int, PostOptions, CancellationToken\)](DiGi.GIS.YOLO.UI.md#DiGi.GIS.YOLO.UI.Query.UserYearBuiltsAsync(thisDiGi.GIS.WebAPI.Classes.GISWebAPIManager,int,int,DiGi.WebAPI.Classes.PostOptions,System.Threading.CancellationToken) 'DiGi\.GIS\.YOLO\.UI\.Query\.UserYearBuiltsAsync\(this DiGi\.GIS\.WebAPI\.Classes\.GISWebAPIManager, int, int, DiGi\.WebAPI\.Classes\.PostOptions, System\.Threading\.CancellationToken\)')) - the same exact user year the Year Built regressor trains on. A building without one is not in the dataset. A reference filed under several named county parts is built once, under the lowest identifier.
 
+<b>Exclusion.</b> When [ExclusionBoundingBoxes](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBoundingBoxes 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBoundingBoxes') names any box, the footprints are read before the split and every building whose footprint envelope - grown by [ExclusionBuffer](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ExclusionBuffer 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ExclusionBuffer') on every side - touches or crosses a box is dropped there and then: it leaves the Train, Validate and Test splits alike, so no crop of the areas under test is ever trained on, tuned on or gated against. The drop is counted per county part in [ExcludedCount](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetCount.ExcludedCount 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetCount\.ExcludedCount') and printed by `CountOnly`. An empty list reads no footprint for the check and keeps the run exactly as it was; a footprint that cannot be read refuses the run rather than passing the check unchecked.
+
 <b>Split.</b> A reference [DiGi\.GIS\.IO\.Query\.Holdout\(System\.String,System\.Int32\)](https://learn.microsoft.com/en-us/dotnet/api/digi.gis.io.query.holdout#digi-gis-io-query-holdout(system-string-system-int32) 'DiGi\.GIS\.IO\.Query\.Holdout\(System\.String,System\.Int32\)') holds out goes to Test and only there - the same buildings the regressor holds out. The rest, sorted ordinally, are split by a seeded draw into Validate ([ValidateWeight](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.ValidateWeight 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.ValidateWeight')) and Train, so the same labels and seed give the same split.
 
 <b>Images.</b> One per orthophoto year - the first of a year in date order - saved by [SavePredictionImage\(this OrtoData, string, int, int\)](DiGi.GIS.YOLO.UI.md#DiGi.GIS.YOLO.UI.Modify.SavePredictionImage(thisDiGi.GIS.Classes.OrtoData,string,int,int) 'DiGi\.GIS\.YOLO\.UI\.Modify\.SavePredictionImage\(this DiGi\.GIS\.Classes\.OrtoData, string, int, int\)'), the encoder the inference export uses, as `{reference}_{year}.jpeg`. A year at or after the label carries one box of class `Building` (index 0): the footprint's bounding box grown by [Offset](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetOptions.Offset 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetOptions\.Offset'), projected onto the image and clamped to it ([PixelBoundingBox\(this OrtoData, BoundingBox2D, double, int, int, bool\)](DiGi.GIS.YOLO.UI.md#DiGi.GIS.YOLO.UI.Query.PixelBoundingBox(thisDiGi.GIS.Classes.OrtoData,DiGi.Geometry.Planar.Classes.BoundingBox2D,double,int,int,bool) 'DiGi\.GIS\.YOLO\.UI\.Query\.PixelBoundingBox\(this DiGi\.GIS\.Classes\.OrtoData, DiGi\.Geometry\.Planar\.Classes\.BoundingBox2D, double, int, int, bool\)')). A year before the label is kept with an empty label file - it teaches the boundary. A positive year whose box has no area inside the image is not written at all. Identical photo bytes under two years are kept once when their labels agree and dropped when they conflict.
@@ -197,7 +199,7 @@ Builds a YOLO training dataset of every labelled building of the named county pa
 
 <b>Resume.</b> The `dataset_references.tsv` manifest is a journal: a building's images and label files are written first and its row appended after, so a building the manifest names is complete and is skipped, and the files of one it does not name - left half-written by a stopped run - are removed and rebuilt. `conf.yaml` is written before the first building and again at the end.
 
-<b>CountOnly</b> stops before any orthophoto is requested and reports, per county part, the labelled buildings, the split, the Legacy agreement table and bounded entries of the Test buildings, the cross-part reference duplicates and an estimate of a build's size.
+<b>CountOnly</b> stops before any orthophoto is requested and reports, per county part, the labelled buildings, the exclusion, the split, the Legacy agreement table and bounded entries of the Test buildings, the cross-part reference duplicates and an estimate of a build's size.
 
 A building that fails is logged and stepped over; a county part whose labels cannot be read is refused while the others are built. [FailedStepNames](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOTrainingDatasetResult.FailedStepNames 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOTrainingDatasetResult\.FailedStepNames') is what says whether the run did everything it set out to do.
 
@@ -1040,6 +1042,41 @@ The second box\.
 #### Returns
 [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')  
 The intersection over union in \[0, 1\], or [System\.Double\.NaN](https://learn.microsoft.com/en-us/dotnet/api/system.double.nan 'System\.Double\.NaN') when either box is missing or neither has any area\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsExcluded(thisDiGi.Geometry.Planar.Classes.BoundingBox2D,System.Collections.Generic.IEnumerable_DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox_,double)'></a>
+
+## Query\.IsExcluded\(this BoundingBox2D, IEnumerable\<YOLOExclusionBoundingBox\>, double\) Method
+
+Tests a footprint envelope against the exclusion bounding boxes of a YOLO training dataset: the envelope grown by the exclusion buffer on every side is excluded when it touches or crosses any box \- an edge that only touches counts as inside, so a crop never slips past a boundary it lands exactly on\.
+
+An empty or null box list excludes nothing, a box whose minimum and maximum were given the wrong way round is read as the area between them, and an envelope without coordinates excludes nothing. A negative buffer is read as 0 - the boxes exactly as drawn.
+
+```csharp
+public static bool IsExcluded(this DiGi.Geometry.Planar.Classes.BoundingBox2D? boundingBox2D, System.Collections.Generic.IEnumerable<DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox?>? yOLOExclusionBoundingBoxes, double exclusionBuffer);
+```
+#### Parameters
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsExcluded(thisDiGi.Geometry.Planar.Classes.BoundingBox2D,System.Collections.Generic.IEnumerable_DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox_,double).boundingBox2D'></a>
+
+`boundingBox2D` [DiGi\.Geometry\.Planar\.Classes\.BoundingBox2D](https://learn.microsoft.com/en-us/dotnet/api/digi.geometry.planar.classes.boundingbox2d 'DiGi\.Geometry\.Planar\.Classes\.BoundingBox2D')
+
+The footprint envelope to test, or null when no footprint could be read\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsExcluded(thisDiGi.Geometry.Planar.Classes.BoundingBox2D,System.Collections.Generic.IEnumerable_DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox_,double).yOLOExclusionBoundingBoxes'></a>
+
+`yOLOExclusionBoundingBoxes` [System\.Collections\.Generic\.IEnumerable&lt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')[YOLOExclusionBoundingBox](DiGi.GIS.YOLO.UI.Classes.md#DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox 'DiGi\.GIS\.YOLO\.UI\.Classes\.YOLOExclusionBoundingBox')[&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1 'System\.Collections\.Generic\.IEnumerable\`1')
+
+The exclusion bounding boxes, in EPSG:2180\.
+
+<a name='DiGi.GIS.YOLO.UI.Query.IsExcluded(thisDiGi.Geometry.Planar.Classes.BoundingBox2D,System.Collections.Generic.IEnumerable_DiGi.GIS.YOLO.UI.Classes.YOLOExclusionBoundingBox_,double).exclusionBuffer'></a>
+
+`exclusionBuffer` [System\.Double](https://learn.microsoft.com/en-us/dotnet/api/system.double 'System\.Double')
+
+The distance, in metres, the envelope is grown by on every side before the test\.
+
+#### Returns
+[System\.Boolean](https://learn.microsoft.com/en-us/dotnet/api/system.boolean 'System\.Boolean')  
+True when the grown envelope touches or crosses any exclusion bounding box; false when nothing excludes it\.
 
 <a name='DiGi.GIS.YOLO.UI.Query.IsResumable(thisDiGi.GIS.YOLO.UI.Classes.YearBuiltPredictionChunk,System.Collections.Generic.IEnumerable_string_,string,double)'></a>
 

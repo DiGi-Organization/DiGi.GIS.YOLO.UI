@@ -4,6 +4,8 @@
     "OutputDirectory": null,
     "CountOnly": true,
     "Resume": true,
+    "ExclusionBoundingBoxes": [],
+    "ExclusionBuffer": 100,
     "LegacyReferencesFilePath": "user files/Data_2025.05.27.tsv",
     "LegacyCutoff": "2025-05-23T00:00:00+00:00",
     "Offset": 1,
