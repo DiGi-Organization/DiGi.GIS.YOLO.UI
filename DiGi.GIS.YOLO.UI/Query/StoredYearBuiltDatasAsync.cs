@@ -85,7 +85,7 @@ namespace DiGi.GIS.YOLO.UI
 
                     if (postResponse is null || !postResponse.Succeeded)
                     {
-                        throw new Exception("The bulk read did not succeed");
+                        throw new InvalidOperationException("The bulk read did not succeed");
                     }
 
                     yearBuiltDatas_Stored = postResponse.Result;

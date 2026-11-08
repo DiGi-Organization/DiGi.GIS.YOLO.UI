@@ -7,6 +7,7 @@ using DiGi.PostgreSQL.Table;
 using DiGi.WebAPI.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -245,7 +246,7 @@ namespace DiGi.GIS.YOLO.UI
                 {
                     string modelPath_Named = string.IsNullOrWhiteSpace(yearBuiltPredictionPipelineOptions.ModelPath) ? "no weights were named" : yearBuiltPredictionPipelineOptions.ModelPath!;
 
-                    messages.Add(string.Format("The detector weights were not found - {0}", modelPath_Named));
+                    messages.Add(string.Format(CultureInfo.CurrentCulture, "The detector weights were not found - {0}", modelPath_Named));
                     failedStepNames.Add(nameof(Query.ModelPath));
 
                     Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "{Method}: the detector weights were not found - {ModelPath}", nameof(RunYearBuiltPredictionsAsync), modelPath_Named);
@@ -257,7 +258,7 @@ namespace DiGi.GIS.YOLO.UI
                 // record of which detector wrote its detections.
                 if (modelSHA256 is null)
                 {
-                    messages.Add(string.Format("The detector weights could not be read to identify them - {0}", modelPath_Preflight));
+                    messages.Add(string.Format(CultureInfo.CurrentCulture, "The detector weights could not be read to identify them - {0}", modelPath_Preflight));
                     failedStepNames.Add(nameof(Query.ModelPath));
 
                     Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "{Method}: the detector weights could not be hashed - {ModelPath}", nameof(RunYearBuiltPredictionsAsync), modelPath_Preflight ?? string.Empty);
@@ -341,7 +342,7 @@ namespace DiGi.GIS.YOLO.UI
                             radiuses_Text = string.Format(System.Globalization.CultureInfo.InvariantCulture, "radiuses {0}", string.Join(", ", radiuses.Select(x => x.ToString(System.Globalization.CultureInfo.InvariantCulture))));
                         }
 
-                        return string.Format("{0} and {1}", years_Text, radiuses_Text);
+                        return string.Format(CultureInfo.CurrentCulture, "{0} and {1}", years_Text, radiuses_Text);
                     }
 
                     HashSet<string> names_Model = DiGi.GIS.IO.Query.YearBuiltPredictionInputColumnNames(yearBuiltPredictorReadiness.Years, yearBuiltPredictorReadiness.Radiuses);

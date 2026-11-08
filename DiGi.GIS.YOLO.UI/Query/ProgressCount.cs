@@ -53,7 +53,7 @@ namespace DiGi.GIS.YOLO.UI
                 return null;
             }
 
-            return long.TryParse(text.Substring(start, end - start + 1), NumberStyles.None, CultureInfo.InvariantCulture, out long count) ? count : null;
+            return long.TryParse(text.AsSpan(start, end - start + 1), NumberStyles.None, CultureInfo.InvariantCulture, out long count) ? count : null;
         }
     }
 }

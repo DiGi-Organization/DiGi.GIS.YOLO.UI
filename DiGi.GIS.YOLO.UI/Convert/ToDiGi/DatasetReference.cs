@@ -38,7 +38,7 @@ namespace DiGi.GIS.YOLO.UI
                 return null;
             }
 
-            if (!Enum.TryParse(values[2], false, out Category category) || !Enum.IsDefined(typeof(Category), category))
+            if (!Enum.TryParse(values[2], false, out Category category) || !Enum.IsDefined(category))
             {
                 return null;
             }
@@ -51,7 +51,7 @@ namespace DiGi.GIS.YOLO.UI
             string description = values[5].Trim();
 
             LegacySource? legacySource = null;
-            foreach (LegacySource legacySource_Temp in Enum.GetValues(typeof(LegacySource)))
+            foreach (LegacySource legacySource_Temp in Enum.GetValues<LegacySource>())
             {
                 if (string.Equals(Core.Query.Description(legacySource_Temp), description, StringComparison.Ordinal))
                 {

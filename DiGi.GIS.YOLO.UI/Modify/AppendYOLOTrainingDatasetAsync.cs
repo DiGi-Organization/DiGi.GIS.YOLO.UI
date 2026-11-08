@@ -497,7 +497,7 @@ namespace DiGi.GIS.YOLO.UI
             if (exists_Dataset)
             {
                 YOLOModel yOLOModel_Directories = new(outputDirectory);
-                foreach (Category category in Enum.GetValues(typeof(Category)))
+                foreach (Category category in Enum.GetValues<Category>())
                 {
                     string? directory_Images = yOLOModel_Directories.GetDirectory_Images(category);
                     string? directory_Labels = yOLOModel_Directories.GetDirectory_Labels(category);
@@ -559,7 +559,7 @@ namespace DiGi.GIS.YOLO.UI
 
             Dictionary<Category, string> directories_Images = [];
             Dictionary<Category, string> directories_Labels = [];
-            foreach (Category category in Enum.GetValues(typeof(Category)))
+            foreach (Category category in Enum.GetValues<Category>())
             {
                 string directory_Images = yOLOModel.GetDirectory_Images(category) ?? Path.Combine(outputDirectory, DiGi.YOLO.Constants.DirectoryName.Images, DiGi.YOLO.Query.DirectoryName(category) ?? string.Empty);
                 string directory_Labels = yOLOModel.GetDirectory_Labels(category) ?? Path.Combine(outputDirectory, DiGi.YOLO.Constants.DirectoryName.Labels, DiGi.YOLO.Query.DirectoryName(category) ?? string.Empty);
@@ -788,7 +788,7 @@ namespace DiGi.GIS.YOLO.UI
                                 if (task.Status != TaskStatus.RanToCompletion)
                                 {
                                     yOLOTrainingDatasetCounts[countyId].FailedBuildingCount++;
-                                    Serilog.Modify.Log(task.Exception?.GetBaseException() ?? new Exception("The building did not complete"), "{Method}: building {Reference} of county {CountyId} failed and is stepped over", nameof(AppendYOLOTrainingDatasetAsync), reference, countyId);
+                                    Serilog.Modify.Log(task.Exception?.GetBaseException() ?? new InvalidOperationException("The building did not complete"), "{Method}: building {Reference} of county {CountyId} failed and is stepped over", nameof(AppendYOLOTrainingDatasetAsync), reference, countyId);
                                     continue;
                                 }
 
