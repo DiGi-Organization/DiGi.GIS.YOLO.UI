@@ -32,16 +32,16 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>The scratch folder of a county that came through without a failed step is removed once the run has finished with it, unless <see cref="YearBuiltPredictionPipelineOptions.CleanScratchDirectory"/> says otherwise - so nothing downstream can depend on what a successful county left behind, which is the gap the two pass workflow used to carry. A county that failed keeps its folder, so re-running it costs seconds rather than repeating the export and the inference.</para>
         /// <para>A county that fails is logged and stepped over, so one unreachable county cannot cost the run the counties behind it. The result therefore comes back either way - <see cref="YearBuiltPredictionResult.FailedStepNames"/> is what says whether the run did everything it set out to do.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI. It also carries the key the write steps authorize with.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI. It also carries the key the write steps authorize with.</param>
         /// <param name="yearBuiltPredictor">The regressor that turns building features into a construction year. Required only when the options ask for the scoring step.</param>
         /// <param name="yearBuiltPredictionPipelineOptions">The options describing the run. Null uses the defaults, which name no county and therefore do nothing.</param>
         /// <param name="progress">An optional progress reporter carrying the running total of buildings the run has carried through a step. A building is counted once per step it clears.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning what the run did, or null when the run could not be attempted at all - no manager, no county named, or no scratch directory.</returns>
         [SupportedOSPlatform("windows")]
-        public static async Task<YearBuiltPredictionResult?> RunYearBuiltPredictionsAsync(this GISWebAPIManager? gisWebAPIManager, IYearBuiltPredictor? yearBuiltPredictor, YearBuiltPredictionPipelineOptions? yearBuiltPredictionPipelineOptions = null, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
+        public static async Task<YearBuiltPredictionResult?> RunYearBuiltPredictionsAsync(this GISWebAPIManager? gISWebAPIManager, IYearBuiltPredictor? yearBuiltPredictor, YearBuiltPredictionPipelineOptions? yearBuiltPredictionPipelineOptions = null, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null)
+            if (gISWebAPIManager is null)
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "{Method}: no {Manager} - nothing can be read or written", nameof(RunYearBuiltPredictionsAsync), nameof(GISWebAPIManager));
                 return null;
@@ -376,7 +376,7 @@ namespace DiGi.GIS.YOLO.UI
 
             // Fully qualified: DiGi.GIS.Classes and DiGi.GIS.PostgreSQL.Classes both declare a YearBuiltData, so
             // importing the second namespace here would make the stored one ambiguous further down.
-            List<PostgreSQL.Classes.AdministrativeAreal2DReference>? administrativeAreal2DReferences = await Query.CountyReferencesAsync(gisWebAPIManager, postOptions_Item);
+            List<PostgreSQL.Classes.AdministrativeAreal2DReference>? administrativeAreal2DReferences = await Query.CountyReferencesAsync(gISWebAPIManager, postOptions_Item);
 
             Dictionary<int, List<int>> countyIds_Siblings;
             if (administrativeAreal2DReferences is null)
@@ -519,7 +519,7 @@ namespace DiGi.GIS.YOLO.UI
                         // and scored there, so no folder ever holds a whole county. One folder of 1.4 million files collapsed
                         // file creation from about 200 to about 7 images a second on a machine generating NTFS 8.3 names
                         // (DiGi-Organization/DiGi.GIS.YOLO.UI#30).
-                        List<PostgreSQL.Classes.OrtoDatasReference>? ortoDatasReferences = await Query.OrtoDatasReferencesAsync(gisWebAPIManager, countyId, postOptions_Item, cancellationToken);
+                        List<PostgreSQL.Classes.OrtoDatasReference>? ortoDatasReferences = await Query.OrtoDatasReferencesAsync(gISWebAPIManager, countyId, postOptions_Item, cancellationToken);
                         if (ortoDatasReferences is null)
                         {
                             Fail(nameof(Query.OrtoDatasReferencesAsync), countyId);
@@ -648,7 +648,7 @@ namespace DiGi.GIS.YOLO.UI
                             {
                                 List<PostgreSQL.Classes.OrtoDatasReference> ortoDatasReferences_Chunk = [.. references_Chunk.Select(x => ortoDatasReferences_ByReference[x])];
 
-                                bool exported = await gisWebAPIManager.ExportPredictionImagesAsync(countyId, ortoDatasReferences_Chunk, directory_Chunk, maxConcurrentRequests, yearBuiltPredictionPipelineOptions.Resume, cancellationToken);
+                                bool exported = await gISWebAPIManager.ExportPredictionImagesAsync(countyId, ortoDatasReferences_Chunk, directory_Chunk, maxConcurrentRequests, yearBuiltPredictionPipelineOptions.Resume, cancellationToken);
                                 if (!exported)
                                 {
                                     Fail(nameof(ExportPredictionImagesAsync), countyId);
@@ -846,7 +846,7 @@ namespace DiGi.GIS.YOLO.UI
 
                     if (yearBuiltPredictionPipelineOptions.UpdateDetections)
                     {
-                        bool updated = await gisWebAPIManager.UpdateBuildingDataYearBuiltPredictionsAsync(countyIds_County, building2DYearBuiltPredictions, batchSize, postOptions_Bulk, references: references_Scored, years: yearBuiltPredictionPipelineOptions.Years);
+                        bool updated = await gISWebAPIManager.UpdateBuildingDataYearBuiltPredictionsAsync(countyIds_County, building2DYearBuiltPredictions, batchSize, postOptions_Bulk, references: references_Scored, years: yearBuiltPredictionPipelineOptions.Years);
                         if (updated)
                         {
                             HashSet<string> references_Written = new(references_Scored, StringComparer.Ordinal);
@@ -907,7 +907,7 @@ namespace DiGi.GIS.YOLO.UI
 
                                 if (table_ClearPredictedYearBuilt.RowCount != 0)
                                 {
-                                    bool updated = await WebAPI.Modify.UpdateItemsAsync(gisWebAPIManager, table_ClearPredictedYearBuilt, countyIds_County, postOptions_Bulk);
+                                    bool updated = await WebAPI.Modify.UpdateItemsAsync(gISWebAPIManager, table_ClearPredictedYearBuilt, countyIds_County, postOptions_Bulk);
                                     if (updated)
                                     {
                                         cleared_County += references_ToClear_Batch.Count;
@@ -961,7 +961,7 @@ namespace DiGi.GIS.YOLO.UI
 
                         List<string> references_Batch = references.GetRange(i, Math.Min(referenceBatchSize, references.Count - i));
 
-                        Table? table_Features = await Query.BuildingDataTableAsync(gisWebAPIManager, countyId, references_Batch, columnUniqueIds, postOptions_Bulk, cancellationToken);
+                        Table? table_Features = await Query.BuildingDataTableAsync(gISWebAPIManager, countyId, references_Batch, columnUniqueIds, postOptions_Bulk, cancellationToken);
                         if (table_Features is null)
                         {
                             Fail(nameof(Query.BuildingDataTableAsync), countyId);
@@ -1074,7 +1074,7 @@ namespace DiGi.GIS.YOLO.UI
                         continue;
                     }
 
-                    List<YearBuiltData> yearBuiltDatas = await Query.YearBuiltDatasAsync(gisWebAPIManager, countyId, years_ByReference, runTimestamp, modelId_Predictor, yearBuiltPredictionPipelineOptions.UpdateYearBuiltData, referenceBatchSize, postOptions_Bulk, cancellationToken);
+                    List<YearBuiltData> yearBuiltDatas = await Query.YearBuiltDatasAsync(gISWebAPIManager, countyId, years_ByReference, runTimestamp, modelId_Predictor, yearBuiltPredictionPipelineOptions.UpdateYearBuiltData, referenceBatchSize, postOptions_Bulk, cancellationToken);
 
                     // Every reference that is read yields exactly one datum, so a smaller result means at least
                     // one page was skipped and the buildings of it must not be written as if they had been read.
@@ -1095,7 +1095,7 @@ namespace DiGi.GIS.YOLO.UI
 
                         if (yearBuiltPredictionPipelineOptions.UpdateYearBuiltData)
                         {
-                            bool updated = await WebAPI.Modify.UpdateItemsAsync(gisWebAPIManager, yearBuiltDatas_Batch, countyIds_County, postOptions_Bulk);
+                            bool updated = await WebAPI.Modify.UpdateItemsAsync(gISWebAPIManager, yearBuiltDatas_Batch, countyIds_County, postOptions_Bulk);
                             if (updated)
                             {
                                 yearBuiltDataUpdatedCount += yearBuiltDatas_Batch.Count;
@@ -1115,7 +1115,7 @@ namespace DiGi.GIS.YOLO.UI
 
                             if (table_PredictedYearBuilt.RowCount != 0)
                             {
-                                bool updated = await WebAPI.Modify.UpdateItemsAsync(gisWebAPIManager, table_PredictedYearBuilt, countyIds_County, postOptions_Bulk);
+                                bool updated = await WebAPI.Modify.UpdateItemsAsync(gISWebAPIManager, table_PredictedYearBuilt, countyIds_County, postOptions_Bulk);
                                 if (updated)
                                 {
                                     buildingDataUpdatedCount += table_PredictedYearBuilt.RowCount;

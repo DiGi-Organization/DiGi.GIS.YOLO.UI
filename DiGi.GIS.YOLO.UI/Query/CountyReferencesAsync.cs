@@ -15,17 +15,17 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>One row per polygon part rather than one per county, so a county whose territory is in several pieces appears several times under one <see cref="AdministrativeAreal2DReference.Code"/>. That is what makes this the answer to both questions the run asks of it: whether a named identifier is a county row at all, and which sibling parts it has.</para>
         /// <para>One request answers both for the whole run, so it is made once and the answer reused.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="postOptions">Optional configuration options for the request.</param>
         /// <returns>A task returning the county rows, or null when they could not be read. Null and an empty list mean different things: the first is a failed read, the second a stored estate with no counties in it.</returns>
-        public static async Task<List<AdministrativeAreal2DReference>?> CountyReferencesAsync(this GISWebAPIManager? gisWebAPIManager, PostOptions? postOptions = null)
+        public static async Task<List<AdministrativeAreal2DReference>?> CountyReferencesAsync(this GISWebAPIManager? gISWebAPIManager, PostOptions? postOptions = null)
         {
-            if (gisWebAPIManager is null)
+            if (gISWebAPIManager is null)
             {
                 return null;
             }
 
-            HttpClient? httpClient = gisWebAPIManager.CreateHttpClient<AdministrativeAreal2DController>(nameof(AdministrativeAreal2DController.GetAdministrativeAreal2DReferencesByAdministrativeArealTypeAsync), out string? path);
+            HttpClient? httpClient = gISWebAPIManager.CreateHttpClient<AdministrativeAreal2DController>(nameof(AdministrativeAreal2DController.GetAdministrativeAreal2DReferencesByAdministrativeArealTypeAsync), out string? path);
             if (httpClient is null || string.IsNullOrWhiteSpace(path))
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for {Method} could not be resolved", nameof(AdministrativeAreal2DController.GetAdministrativeAreal2DReferencesByAdministrativeArealTypeAsync));

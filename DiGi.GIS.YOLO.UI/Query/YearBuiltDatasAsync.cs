@@ -17,7 +17,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>Every prediction of one run carries the same stamp. The stored entries are keyed by it, so one stamp per run leaves one history entry per run, and re-running with the same stamp replaces that entry rather than adding to it.</para>
         /// <para>The read is bulk: the endpoint answers up to <see cref="Constants.Count.YearBuiltDataReference_Maximum"/> references in one request, so the references are paged at that size and a page is the unit that succeeds or fails. A page that cannot be read is skipped rather than answered with a fresh datum for every building of it, because that would store a second row alongside the one that could not be read.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The identifier of the county row the references belong to.</param>
         /// <param name="years">The predicted construction year of each building, by reference.</param>
         /// <param name="runTimestamp">The stamp every prediction of this run carries.</param>
@@ -28,7 +28,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning the year built data to store, each carrying its building&apos;s history plus this run&apos;s prediction.</returns>
         public static async Task<List<YearBuiltData>> YearBuiltDatasAsync(
-            this GISWebAPIManager? gisWebAPIManager,
+            this GISWebAPIManager? gISWebAPIManager,
             int countyId,
             IDictionary<string, short>? years,
             DateTimeOffset runTimestamp,
@@ -40,7 +40,7 @@ namespace DiGi.GIS.YOLO.UI
         {
             List<YearBuiltData> result = [];
 
-            if (gisWebAPIManager is null || years is null || years.Count == 0)
+            if (gISWebAPIManager is null || years is null || years.Count == 0)
             {
                 return result;
             }
@@ -58,7 +58,7 @@ namespace DiGi.GIS.YOLO.UI
                 // carry no prediction this run, and a re-run merges them.
                 HashSet<string> references_Failed = new(StringComparer.Ordinal);
 
-                Dictionary<string, List<YearBuiltData>>? yearBuiltDatas_ByReference = await StoredYearBuiltDatasAsync(gisWebAPIManager, countyId, references, referenceBatchSize, references_Failed, postOptions, cancellationToken);
+                Dictionary<string, List<YearBuiltData>>? yearBuiltDatas_ByReference = await StoredYearBuiltDatasAsync(gISWebAPIManager, countyId, references, referenceBatchSize, references_Failed, postOptions, cancellationToken);
                 if (yearBuiltDatas_ByReference is null)
                 {
                     return result;

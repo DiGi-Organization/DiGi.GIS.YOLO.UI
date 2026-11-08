@@ -73,10 +73,10 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                 return Fail($"WebAPI authorization key not found in '{Constants.FileName.GISWebAPIClientConfigurationFile}'.", YearBuiltPredictionExitCode.Authorization);
             }
 
-            GISWebAPIManager? gisWebAPIManager = WebAPI.Create.GISWebAPIManager(key);
-            if (gisWebAPIManager is null)
+            GISWebAPIManager? gISWebAPIManager = WebAPI.Create.GISWebAPIManager(key);
+            if (gISWebAPIManager is null)
             {
-                return Fail("Failed to initialize GISWebAPIManager with the provided key.", YearBuiltPredictionExitCode.Authorization);
+                return Fail("Failed to initialize gISWebAPIManager with the provided key.", YearBuiltPredictionExitCode.Authorization);
             }
 
             string? modelPath_Resolved = Query.ModelPath(options.ModelPath);
@@ -122,7 +122,7 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                 {
                     // The environment preflight is the orchestrator's own first step, so it is not repeated here -
                     // each run of it starts an interpreter, and a second one could only agree with the first.
-                    result = await gisWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictor, options, progress, cancellationTokenSource.Token);
+                    result = await gISWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictor, options, progress, cancellationTokenSource.Token);
                 }
                 catch (OperationCanceledException)
                 {
@@ -294,7 +294,7 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                 return Fail("The options must name an absolute OutputDirectory - the dataset root.", YearBuiltPredictionExitCode.Configuration);
             }
 
-            GISWebAPIManager? gisWebAPIManager = null;
+            GISWebAPIManager? gISWebAPIManager = null;
             if (mode == "--dataset")
             {
                 if (options.CountyIds is null || !options.CountyIds.Any(x => x > 0))
@@ -308,10 +308,10 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                     return Fail($"WebAPI authorization key not found in '{Constants.FileName.GISWebAPIClientConfigurationFile}'.", YearBuiltPredictionExitCode.Authorization);
                 }
 
-                gisWebAPIManager = WebAPI.Create.GISWebAPIManager(key);
-                if (gisWebAPIManager is null)
+                gISWebAPIManager = WebAPI.Create.GISWebAPIManager(key);
+                if (gISWebAPIManager is null)
                 {
-                    return Fail("Failed to initialize GISWebAPIManager with the provided key.", YearBuiltPredictionExitCode.Authorization);
+                    return Fail("Failed to initialize gISWebAPIManager with the provided key.", YearBuiltPredictionExitCode.Authorization);
                 }
             }
 
@@ -339,7 +339,7 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                         Console.WriteLine(Create.ProgressMessage(count));
                     });
 
-                    YOLOTrainingDatasetResult? result = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(options, progress, cancellationTokenSource.Token);
+                    YOLOTrainingDatasetResult? result = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(options, progress, cancellationTokenSource.Token);
                     if (result is null)
                     {
                         return Fail("The training dataset could not be attempted - see the log.", YearBuiltPredictionExitCode.Configuration);
@@ -504,7 +504,7 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                 return Fail($"YOLO training run options could not be loaded from {(string.IsNullOrWhiteSpace(path_Options) ? "default location" : path_Options)}.", YearBuiltPredictionExitCode.Configuration);
             }
 
-            GISWebAPIManager? gisWebAPIManager = null;
+            GISWebAPIManager? gISWebAPIManager = null;
             if (options.Steps is null || options.Steps.Count == 0 || options.Steps.Contains(YOLOTrainingStep.Dataset))
             {
                 string? key = Query.Key();
@@ -513,10 +513,10 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                     return Fail($"WebAPI authorization key not found in '{Constants.FileName.GISWebAPIClientConfigurationFile}'.", YearBuiltPredictionExitCode.Authorization);
                 }
 
-                gisWebAPIManager = WebAPI.Create.GISWebAPIManager(key);
-                if (gisWebAPIManager is null)
+                gISWebAPIManager = WebAPI.Create.GISWebAPIManager(key);
+                if (gISWebAPIManager is null)
                 {
-                    return Fail("Failed to initialize GISWebAPIManager with the provided key.", YearBuiltPredictionExitCode.Authorization);
+                    return Fail("Failed to initialize gISWebAPIManager with the provided key.", YearBuiltPredictionExitCode.Authorization);
                 }
             }
 
@@ -547,7 +547,7 @@ namespace DiGi.GIS.YOLO.UI.ConsoleApp
                     Console.WriteLine($"[INFO] {message}");
                 });
 
-                YOLOTrainingRunResult? result = await gisWebAPIManager.RunYOLOTrainingAsync(options, progress, information, cancellationTokenSource.Token);
+                YOLOTrainingRunResult? result = await gISWebAPIManager.RunYOLOTrainingAsync(options, progress, information, cancellationTokenSource.Token);
                 if (result is null)
                 {
                     return Fail("The training run could not be attempted - see the log.", YearBuiltPredictionExitCode.Configuration);

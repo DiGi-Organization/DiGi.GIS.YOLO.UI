@@ -20,7 +20,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>Decodes binary payloads from <see cref="OrtoData.Bytes"/> and re-encodes them as JPEG files named <c>{reference}_{year}.jpeg</c>.</para>
         /// <para>Named <paramref name="references"/> narrow the county to those buildings, so a run that only needs the labelled buildings of a training dataset does not fetch a whole county of imagery for them.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The integer identifier of the county partition to export images for.</param>
         /// <param name="destinationDirectory">The target directory path on disk where JPEG files will be saved.</param>
         /// <param name="maxConcurrentRequests">The maximum number of concurrent WebAPI requests allowed during image fetching. Defaults to 8.</param>
@@ -29,9 +29,9 @@ namespace DiGi.GIS.YOLO.UI
         /// <param name="cancellationToken">A cancellation token to observe while performing the operation.</param>
         /// <returns>A task returning <see langword="true"/> if the export completed successfully; otherwise <see langword="false"/>.</returns>
         [SupportedOSPlatform("windows")]
-        public static async Task<bool> ExportPredictionImagesAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, string? destinationDirectory, int maxConcurrentRequests = 8, bool resume = true, IEnumerable<string>? references = null, CancellationToken cancellationToken = default)
+        public static async Task<bool> ExportPredictionImagesAsync(this GISWebAPIManager? gISWebAPIManager, int countyId, string? destinationDirectory, int maxConcurrentRequests = 8, bool resume = true, IEnumerable<string>? references = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null || countyId <= 0 || string.IsNullOrWhiteSpace(destinationDirectory))
+            if (gISWebAPIManager is null || countyId <= 0 || string.IsNullOrWhiteSpace(destinationDirectory))
             {
                 return false;
             }
@@ -41,7 +41,7 @@ namespace DiGi.GIS.YOLO.UI
                 Directory.CreateDirectory(destinationDirectory);
             }
 
-            List<OrtoDatasReference>? ortoDatasReferences = await Query.OrtoDatasReferencesAsync(gisWebAPIManager, countyId, cancellationToken: cancellationToken);
+            List<OrtoDatasReference>? ortoDatasReferences = await Query.OrtoDatasReferencesAsync(gISWebAPIManager, countyId, cancellationToken: cancellationToken);
             if (ortoDatasReferences is null)
             {
                 return false;
@@ -60,7 +60,7 @@ namespace DiGi.GIS.YOLO.UI
 
             List<OrtoDatasReference> ortoDatasReferences_Filtered = references_Filter is null ? ortoDatasReferences : [.. ortoDatasReferences.Where(x => x?.Reference is string reference && references_Filter.Contains(reference))];
 
-            return await ExportPredictionImagesAsync(gisWebAPIManager, countyId, ortoDatasReferences_Filtered, destinationDirectory, maxConcurrentRequests, resume, cancellationToken);
+            return await ExportPredictionImagesAsync(gISWebAPIManager, countyId, ortoDatasReferences_Filtered, destinationDirectory, maxConcurrentRequests, resume, cancellationToken);
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>The overload a prediction run uses for one chunk of a county: the listing has been read once for the county and split already, so it is not read again per chunk (DiGi-Organization/DiGi.GIS.YOLO.UI#30).</para>
         /// <para>Decodes binary payloads from <see cref="OrtoData.Bytes"/> and re-encodes them as JPEG files named <c>{reference}_{year}.jpeg</c>.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The integer identifier of the county partition the buildings belong to.</param>
         /// <param name="ortoDatasReferences">The listing entries of the buildings to export.</param>
         /// <param name="destinationDirectory">The target directory path on disk where JPEG files will be saved.</param>
@@ -77,9 +77,9 @@ namespace DiGi.GIS.YOLO.UI
         /// <param name="cancellationToken">A cancellation token to observe while performing the operation.</param>
         /// <returns>A task returning <see langword="true"/> if the export completed successfully; otherwise <see langword="false"/>.</returns>
         [SupportedOSPlatform("windows")]
-        public static async Task<bool> ExportPredictionImagesAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, IEnumerable<OrtoDatasReference>? ortoDatasReferences, string? destinationDirectory, int maxConcurrentRequests = 8, bool resume = true, CancellationToken cancellationToken = default)
+        public static async Task<bool> ExportPredictionImagesAsync(this GISWebAPIManager? gISWebAPIManager, int countyId, IEnumerable<OrtoDatasReference>? ortoDatasReferences, string? destinationDirectory, int maxConcurrentRequests = 8, bool resume = true, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null || countyId <= 0 || ortoDatasReferences is null || string.IsNullOrWhiteSpace(destinationDirectory))
+            if (gISWebAPIManager is null || countyId <= 0 || ortoDatasReferences is null || string.IsNullOrWhiteSpace(destinationDirectory))
             {
                 return false;
             }
@@ -89,7 +89,7 @@ namespace DiGi.GIS.YOLO.UI
                 Directory.CreateDirectory(destinationDirectory);
             }
 
-            HttpClient? httpClient_Item = gisWebAPIManager.CreateHttpClient<OrtoDatasController>(nameof(OrtoDatasController.GetItemByReferenceAsync), out string? path_Item);
+            HttpClient? httpClient_Item = gISWebAPIManager.CreateHttpClient<OrtoDatasController>(nameof(OrtoDatasController.GetItemByReferenceAsync), out string? path_Item);
             if (httpClient_Item is null || string.IsNullOrWhiteSpace(path_Item))
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for GetItemByReferenceAsync could not be resolved");

@@ -17,16 +17,16 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>The projection is an allow-list rather than a filter. Asking for every column would hand a regressor the pipeline&apos;s own output column back as an input feature, which reads as a large accuracy gain rather than as a defect.</para>
         /// <para>The endpoint refuses more than <see cref="Constants.Count.BuildingDataReference_Maximum"/> references in one request and a county is far larger than that, so the caller pages the references rather than this method doing it - a page is the unit that succeeds or fails.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The identifier of the county row the references belong to.</param>
         /// <param name="references">The building references to read, at most the endpoint&apos;s cap.</param>
         /// <param name="columnUniqueIds">The unique identifiers of the columns to project. Null or empty asks for every column, which this pipeline never wants.</param>
         /// <param name="postOptions">Optional configuration options for the request.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning the projected table, or null when it could not be read.</returns>
-        public static async Task<Table?> BuildingDataTableAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, IEnumerable<string>? references, IEnumerable<string>? columnUniqueIds, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
+        public static async Task<Table?> BuildingDataTableAsync(this GISWebAPIManager? gISWebAPIManager, int countyId, IEnumerable<string>? references, IEnumerable<string>? columnUniqueIds, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null || references is null)
+            if (gISWebAPIManager is null || references is null)
             {
                 return null;
             }
@@ -57,7 +57,7 @@ namespace DiGi.GIS.YOLO.UI
                 }
             }
 
-            HttpClient? httpClient = gisWebAPIManager.CreateHttpClient<BuildingDataController>(nameof(BuildingDataController.GetTableByBuildingDataByReferencesParameterAsync), out string? path);
+            HttpClient? httpClient = gISWebAPIManager.CreateHttpClient<BuildingDataController>(nameof(BuildingDataController.GetTableByBuildingDataByReferencesParameterAsync), out string? path);
             if (httpClient is null || string.IsNullOrWhiteSpace(path))
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for {Method} could not be resolved", nameof(BuildingDataController.GetTableByBuildingDataByReferencesParameterAsync));

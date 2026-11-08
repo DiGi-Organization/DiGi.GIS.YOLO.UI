@@ -16,21 +16,21 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>The read is bulk and paged at <paramref name="referenceBatchSize"/>. The endpoint has no <c>fallbackbyreference</c> parameter: it falls back to a lookup by reference alone only when no county is sent. So the county is sent first - it is the cheap, partition-pruned read - and the references it did not answer are asked for once more without it, which finds a footprint filed under a sibling polygon part of the county.</para>
         /// <para>A page that cannot be read is logged and skipped; its references are simply absent from the result, and the caller counts them as buildings without a footprint.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The identifier of the county part the references belong to.</param>
         /// <param name="references">The building references to read.</param>
         /// <param name="referenceBatchSize">The number of references read in one request, at least 1.</param>
         /// <param name="postOptions">Optional configuration options for the requests.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning the footprints by reference, or null when the client could not be built.</returns>
-        public static async Task<Dictionary<string, Building2D>?> Building2DsAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, IEnumerable<string>? references, int referenceBatchSize = Constants.Count.BuildingDataReference_Maximum, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
+        public static async Task<Dictionary<string, Building2D>?> Building2DsAsync(this GISWebAPIManager? gISWebAPIManager, int countyId, IEnumerable<string>? references, int referenceBatchSize = Constants.Count.BuildingDataReference_Maximum, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null)
+            if (gISWebAPIManager is null)
             {
                 return null;
             }
 
-            HttpClient? httpClient = gisWebAPIManager.CreateHttpClient<Building2DController>(nameof(Building2DController.GetItemsByReferencesAsync), out string? path);
+            HttpClient? httpClient = gISWebAPIManager.CreateHttpClient<Building2DController>(nameof(Building2DController.GetItemsByReferencesAsync), out string? path);
             if (httpClient is null || string.IsNullOrWhiteSpace(path))
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for {Method} could not be resolved", nameof(Building2DController.GetItemsByReferencesAsync));

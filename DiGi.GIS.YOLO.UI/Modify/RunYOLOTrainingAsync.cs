@@ -23,13 +23,13 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>The trained weights are copied to <c>&lt;ProjectDirectory&gt;\&lt;RunName&gt;\&lt;RunName&gt;.pt</c>, a new file that is never overwritten and never named <c>model</c>; the validation and the evaluation measure that copy, and its SHA-256 is compared with the one the training reported. The identity of the start weights and of the copy is written to the log and to <paramref name="information"/> as soon as it is known. Without the training step the validation measures the start weights, which gives the baseline a candidate is compared with.</para>
         /// <para>A cancellation is a result with <see cref="YOLOTrainingRunResult.Cancelled"/> set rather than an exception, and what earlier steps wrote is left as it is; the dataset manifest lets a re-run continue.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The client of the Web API, needed only by the <see cref="YOLOTrainingStep.Dataset"/> step.</param>
+        /// <param name="gISWebAPIManager">The client of the Web API, needed only by the <see cref="YOLOTrainingStep.Dataset"/> step.</param>
         /// <param name="yOLOTrainingRunOptions">The options naming the dataset, the start weights, the run and the steps.</param>
         /// <param name="progress">Receives the number of buildings the dataset step has completed.</param>
         /// <param name="information">Receives one line for each thing worth reporting, without a prefix.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe.</param>
         /// <returns>The result, or null when there are no options.</returns>
-        public static async Task<YOLOTrainingRunResult?> RunYOLOTrainingAsync(this GISWebAPIManager? gisWebAPIManager, YOLOTrainingRunOptions? yOLOTrainingRunOptions, IProgress<long>? progress = null, IProgress<string>? information = null, CancellationToken cancellationToken = default)
+        public static async Task<YOLOTrainingRunResult?> RunYOLOTrainingAsync(this GISWebAPIManager? gISWebAPIManager, YOLOTrainingRunOptions? yOLOTrainingRunOptions, IProgress<long>? progress = null, IProgress<string>? information = null, CancellationToken cancellationToken = default)
         {
             if (yOLOTrainingRunOptions is null)
             {
@@ -229,7 +229,7 @@ namespace DiGi.GIS.YOLO.UI
 
             // The preflight: everything that can be known without starting a process is checked before the first step,
             // because a dataset build can take hours and a mistyped run name should not be found after it.
-            if (yOLOTrainingSteps.Contains(YOLOTrainingStep.Dataset) && gisWebAPIManager is null)
+            if (yOLOTrainingSteps.Contains(YOLOTrainingStep.Dataset) && gISWebAPIManager is null)
             {
                 Fail(nameof(GISWebAPIManager), "The Dataset step needs a Web API client.");
             }
@@ -414,7 +414,7 @@ namespace DiGi.GIS.YOLO.UI
             {
                 if (yOLOTrainingSteps.Contains(YOLOTrainingStep.Dataset))
                 {
-                    YOLOTrainingDatasetResult? yOLOTrainingDatasetResult = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions, progress, cancellationToken);
+                    YOLOTrainingDatasetResult? yOLOTrainingDatasetResult = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions, progress, cancellationToken);
                     if (yOLOTrainingDatasetResult is null)
                     {
                         Fail(Query.YOLOTrainingStepName(YOLOTrainingStep.Dataset), "The training dataset could not be attempted - see the log.");

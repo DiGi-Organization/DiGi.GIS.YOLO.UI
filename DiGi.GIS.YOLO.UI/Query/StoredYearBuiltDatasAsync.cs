@@ -17,7 +17,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>The read is bulk and paged at <paramref name="referenceBatchSize"/>, at most <see cref="Constants.Count.YearBuiltDataReference_Maximum"/> - the endpoint&apos;s cap. <c>fallbackbyreference=true</c> is sent explicitly, because the endpoint defaults it off and without it a row filed under a sibling polygon part of the county is not returned. The request body is passed as a factory, so a retry of a page rebuilds it rather than resending a drained stream.</para>
         /// <para>A page is the unit that succeeds or fails. The references of a page that could not be read are added to <paramref name="references_Failed"/> and are absent from the result - a caller must not read their absence as "nothing stored".</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The identifier of the county row the references belong to.</param>
         /// <param name="references">The building references to read.</param>
         /// <param name="referenceBatchSize">The number of references read in one request, clamped to [1, <see cref="Constants.Count.YearBuiltDataReference_Maximum"/>].</param>
@@ -25,14 +25,14 @@ namespace DiGi.GIS.YOLO.UI
         /// <param name="postOptions">Optional configuration options for the requests.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning the stored rows by reference - a reference with nothing stored is absent - or null when the client could not be built.</returns>
-        public static async Task<Dictionary<string, List<YearBuiltData>>?> StoredYearBuiltDatasAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, IEnumerable<string>? references, int referenceBatchSize = Constants.Count.YearBuiltDataReference_Maximum, ICollection<string>? references_Failed = null, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
+        public static async Task<Dictionary<string, List<YearBuiltData>>?> StoredYearBuiltDatasAsync(this GISWebAPIManager? gISWebAPIManager, int countyId, IEnumerable<string>? references, int referenceBatchSize = Constants.Count.YearBuiltDataReference_Maximum, ICollection<string>? references_Failed = null, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null)
+            if (gISWebAPIManager is null)
             {
                 return null;
             }
 
-            HttpClient? httpClient = gisWebAPIManager.CreateHttpClient<YearBuiltDataController>(nameof(YearBuiltDataController.GetItemsByReferencesAsync), out string? path);
+            HttpClient? httpClient = gISWebAPIManager.CreateHttpClient<YearBuiltDataController>(nameof(YearBuiltDataController.GetItemsByReferencesAsync), out string? path);
             if (httpClient is null || string.IsNullOrWhiteSpace(path))
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for {Method} could not be resolved", nameof(YearBuiltDataController.GetItemsByReferencesAsync));

@@ -16,19 +16,19 @@ namespace DiGi.GIS.YOLO.UI
         /// Reads the building references filed under more than one county part, most collisions first.
         /// <para>The endpoint is global - it takes no county - so the caller filters the rows by <see cref="Building2DReferenceDuplicate.CountyIds"/>. A reference is unique only per county part and nothing enforces it, so this is the measurement of how many references a build must de-duplicate across parts.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="limit">The most rows to return, at least 1.</param>
         /// <param name="postOptions">Optional configuration options for the request.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning the duplicated references, or null when they could not be read.</returns>
-        public static async Task<List<Building2DReferenceDuplicate>?> ReferenceDuplicatesAsync(this GISWebAPIManager? gisWebAPIManager, int limit, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
+        public static async Task<List<Building2DReferenceDuplicate>?> ReferenceDuplicatesAsync(this GISWebAPIManager? gISWebAPIManager, int limit, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null)
+            if (gISWebAPIManager is null)
             {
                 return null;
             }
 
-            HttpClient? httpClient = gisWebAPIManager.CreateHttpClient<Building2DController>(nameof(Building2DController.GetReferenceDuplicatesAsync), out string? path);
+            HttpClient? httpClient = gISWebAPIManager.CreateHttpClient<Building2DController>(nameof(Building2DController.GetReferenceDuplicatesAsync), out string? path);
             if (httpClient is null || string.IsNullOrWhiteSpace(path))
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for {Method} could not be resolved", nameof(Building2DController.GetReferenceDuplicatesAsync));

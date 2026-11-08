@@ -19,15 +19,15 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>The county is paged by reference: each page is the next <paramref name="pageSize"/> rows after the last reference of the previous one, and a short page - or a blank last reference, which would otherwise restart the county - ends it. Only the label column is projected; the server adds the reference and county columns on top.</para>
         /// <para><b>Any page that cannot be read fails the whole county</b> - the result is null, never a partial label set, because a builder handed half a county&apos;s labels would build a dataset that silently misses the other half.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The identifier of the county part to read.</param>
         /// <param name="pageSize">The number of rows read in one request, clamped to [1, <see cref="Constants.Count.BuildingDataReference_Maximum"/>].</param>
         /// <param name="postOptions">Optional configuration options for the requests.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning the label year by reference - an unlabelled building is absent - or null when any page could not be read.</returns>
-        public static async Task<Dictionary<string, short>?> UserYearBuiltsAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, int pageSize = Constants.Count.BuildingDataReference_Maximum, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
+        public static async Task<Dictionary<string, short>?> UserYearBuiltsAsync(this GISWebAPIManager? gISWebAPIManager, int countyId, int pageSize = Constants.Count.BuildingDataReference_Maximum, PostOptions? postOptions = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null || countyId <= 0)
+            if (gISWebAPIManager is null || countyId <= 0)
             {
                 return null;
             }
@@ -37,7 +37,7 @@ namespace DiGi.GIS.YOLO.UI
                 return null;
             }
 
-            HttpClient? httpClient = gisWebAPIManager.CreateHttpClient<BuildingDataController>(nameof(BuildingDataController.GetTableByBuildingDataByPagingParameterAsync), out string? path);
+            HttpClient? httpClient = gISWebAPIManager.CreateHttpClient<BuildingDataController>(nameof(BuildingDataController.GetTableByBuildingDataByPagingParameterAsync), out string? path);
             if (httpClient is null || string.IsNullOrWhiteSpace(path))
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "HttpClient or path for {Method} could not be resolved", nameof(BuildingDataController.GetTableByBuildingDataByPagingParameterAsync));

@@ -31,15 +31,15 @@ namespace DiGi.GIS.YOLO.UI
         /// <para><b>CountOnly</b> stops before any orthophoto is requested and reports, per county part, the labelled buildings, the exclusion, the split, the Legacy agreement table and bounded entries of the Test buildings, the cross-part reference duplicates and an estimate of a build&apos;s size.</para>
         /// <para>A building that fails is logged and stepped over; a county part whose labels cannot be read is refused while the others are built. <see cref="YOLOTrainingDatasetResult.FailedStepNames"/> is what says whether the run did everything it set out to do.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="yOLOTrainingDatasetOptions">The options describing the dataset.</param>
         /// <param name="progress">An optional progress reporter carrying the running total of buildings the run has carried through.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task returning what the run did, or null when it could not be attempted at all - no manager, no options, no county named, or no absolute output directory.</returns>
         [SupportedOSPlatform("windows")]
-        public static async Task<YOLOTrainingDatasetResult?> AppendYOLOTrainingDatasetAsync(this GISWebAPIManager? gisWebAPIManager, YOLOTrainingDatasetOptions? yOLOTrainingDatasetOptions, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
+        public static async Task<YOLOTrainingDatasetResult?> AppendYOLOTrainingDatasetAsync(this GISWebAPIManager? gISWebAPIManager, YOLOTrainingDatasetOptions? yOLOTrainingDatasetOptions, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
         {
-            if (gisWebAPIManager is null || yOLOTrainingDatasetOptions is null)
+            if (gISWebAPIManager is null || yOLOTrainingDatasetOptions is null)
             {
                 Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "{Method}: no {Manager} or no options - nothing can be read", nameof(AppendYOLOTrainingDatasetAsync), nameof(GISWebAPIManager));
                 return null;
@@ -121,7 +121,7 @@ namespace DiGi.GIS.YOLO.UI
 
             // The scope is checked first: an identifier that is no county row - most often a county code - matches no
             // building, and every tally below would then report a legitimate zero.
-            List<PostgreSQL.Classes.AdministrativeAreal2DReference>? administrativeAreal2DReferences = await Query.CountyReferencesAsync(gisWebAPIManager, postOptions_Item);
+            List<PostgreSQL.Classes.AdministrativeAreal2DReference>? administrativeAreal2DReferences = await Query.CountyReferencesAsync(gISWebAPIManager, postOptions_Item);
             if (administrativeAreal2DReferences is null)
             {
                 messages.Add("The county rows could not be read, so the scope could not be checked.");
@@ -200,7 +200,7 @@ namespace DiGi.GIS.YOLO.UI
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Dictionary<string, short>? years = await Query.UserYearBuiltsAsync(gisWebAPIManager, countyId, referenceBatchSize, postOptions_Bulk, cancellationToken);
+                Dictionary<string, short>? years = await Query.UserYearBuiltsAsync(gISWebAPIManager, countyId, referenceBatchSize, postOptions_Bulk, cancellationToken);
                 if (years is null)
                 {
                     Fail(nameof(Query.UserYearBuiltsAsync), string.Format(CultureInfo.InvariantCulture, "The labels of county {0} could not be read in full - the county is not built.", countyId));
@@ -260,7 +260,7 @@ namespace DiGi.GIS.YOLO.UI
 
                     // A read that cannot even start is refused rather than passed: a county whose footprints were not
                     // read could carry a crop of the areas under test into every split.
-                    Dictionary<string, Building2D>? building2Ds = await Query.Building2DsAsync(gisWebAPIManager, countyId, references_County, referenceBatchSize, postOptions_Bulk, cancellationToken);
+                    Dictionary<string, Building2D>? building2Ds = await Query.Building2DsAsync(gISWebAPIManager, countyId, references_County, referenceBatchSize, postOptions_Bulk, cancellationToken);
                     if (building2Ds is null)
                     {
                         Fail(nameof(Query.Building2DsAsync), string.Format(CultureInfo.InvariantCulture, "The exclusion footprints of county {0} could not be read - the exclusion could not be checked, so no dataset is built.", countyId));
@@ -375,7 +375,7 @@ namespace DiGi.GIS.YOLO.UI
                 }
 
                 List<string> references_Failed = [];
-                Dictionary<string, List<YearBuiltData>>? yearBuiltDatas_ByReference = await Query.StoredYearBuiltDatasAsync(gisWebAPIManager, countyId, references_Test, Constants.Count.YearBuiltDataReference_Maximum, references_Failed, postOptions_Bulk, cancellationToken);
+                Dictionary<string, List<YearBuiltData>>? yearBuiltDatas_ByReference = await Query.StoredYearBuiltDatasAsync(gISWebAPIManager, countyId, references_Test, Constants.Count.YearBuiltDataReference_Maximum, references_Failed, postOptions_Bulk, cancellationToken);
 
                 if (yearBuiltDatas_ByReference is null || references_Failed.Count != 0)
                 {
@@ -440,7 +440,7 @@ namespace DiGi.GIS.YOLO.UI
             if (countOnly)
             {
                 // Global endpoint: read once, filtered to the parts of this run.
-                List<PostgreSQL.Classes.Building2DReferenceDuplicate>? building2DReferenceDuplicates = await Query.ReferenceDuplicatesAsync(gisWebAPIManager, yOLOTrainingDatasetOptions.ReferenceDuplicateLimit, postOptions_ReferenceDuplicates, cancellationToken);
+                List<PostgreSQL.Classes.Building2DReferenceDuplicate>? building2DReferenceDuplicates = await Query.ReferenceDuplicatesAsync(gISWebAPIManager, yOLOTrainingDatasetOptions.ReferenceDuplicateLimit, postOptions_ReferenceDuplicates, cancellationToken);
                 if (building2DReferenceDuplicates is null)
                 {
                     Fail(nameof(Query.ReferenceDuplicatesAsync), "The cross-part reference duplicates could not be read.");
@@ -586,7 +586,7 @@ namespace DiGi.GIS.YOLO.UI
                     return (reference, images, yOLOTrainingDatasetCount);
                 }
 
-                GIS.Classes.OrtoDatas? ortoDatas = await Query.OrtoDatasAsync(gisWebAPIManager, countyId, reference, postOptions_Item, cancellationToken);
+                GIS.Classes.OrtoDatas? ortoDatas = await Query.OrtoDatasAsync(gISWebAPIManager, countyId, reference, postOptions_Item, cancellationToken);
 
                 // One photo per year: the first of a year in date order, as the inference export keeps it.
                 List<(short Year, OrtoData OrtoData, string Hash)> ortoDatas_Year = [];
@@ -744,7 +744,7 @@ namespace DiGi.GIS.YOLO.UI
 
                         List<string> references_Page = references_County.GetRange(i, Math.Min(referenceBatchSize, references_County.Count - i));
 
-                        Dictionary<string, Building2D>? building2Ds = await Query.Building2DsAsync(gisWebAPIManager, countyId, references_Page, referenceBatchSize, postOptions_Bulk, cancellationToken);
+                        Dictionary<string, Building2D>? building2Ds = await Query.Building2DsAsync(gISWebAPIManager, countyId, references_Page, referenceBatchSize, postOptions_Bulk, cancellationToken);
                         if (building2Ds is null)
                         {
                             Fail(nameof(Query.Building2DsAsync), string.Format(CultureInfo.InvariantCulture, "The footprints of county {0} could not be read.", countyId));

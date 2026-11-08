@@ -19,7 +19,7 @@ namespace DiGi.GIS.YOLO.UI
         /// <para>A county is tens of thousands of buildings against ninety-odd detection columns, so the predictions are sent in batches rather than as one request.</para>
         /// <para>Naming the scored <paramref name="references"/> turns the write into a replacement of each scored building's detection columns over <paramref name="years"/>, so a building the current weights do not fire on loses what an earlier detector left on it (<see cref="Create.BuildingDataYearBuiltPredictionsTable"/>, DiGi-Organization/DiGi.GIS.YOLO.UI#21). Without them only the detected buildings and years are written, as before.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyIds">The identifiers of the county rows the buildings belong to. Normally every polygon part of one county - the endpoint files each row under the part its reference belongs to.</param>
         /// <param name="building2DYearBuiltPredictions">The detections to write, one instance per building.</param>
         /// <param name="batchSize">The number of buildings sent in one request. Defaults to 5000.</param>
@@ -28,9 +28,9 @@ namespace DiGi.GIS.YOLO.UI
         /// <param name="references">The references the detector scored, detected or not. Null writes only the detected buildings.</param>
         /// <param name="years">The year range whose detection columns are replaced when <paramref name="references"/> are named. Null applies the scoring step's default range.</param>
         /// <returns>A task returning <see langword="true"/> when every batch was accepted; otherwise <see langword="false"/>.</returns>
-        public static async Task<bool> UpdateBuildingDataYearBuiltPredictionsAsync(this GISWebAPIManager? gisWebAPIManager, IEnumerable<int>? countyIds, IEnumerable<Building2DYearBuiltPredictions>? building2DYearBuiltPredictions, int batchSize = 5000, PostOptions? postOptions = null, string? key = null, IEnumerable<string>? references = null, Range<int>? years = null)
+        public static async Task<bool> UpdateBuildingDataYearBuiltPredictionsAsync(this GISWebAPIManager? gISWebAPIManager, IEnumerable<int>? countyIds, IEnumerable<Building2DYearBuiltPredictions>? building2DYearBuiltPredictions, int batchSize = 5000, PostOptions? postOptions = null, string? key = null, IEnumerable<string>? references = null, Range<int>? years = null)
         {
-            if (gisWebAPIManager is null || countyIds is null || building2DYearBuiltPredictions is null)
+            if (gISWebAPIManager is null || countyIds is null || building2DYearBuiltPredictions is null)
             {
                 return false;
             }
@@ -98,7 +98,7 @@ namespace DiGi.GIS.YOLO.UI
                     continue;
                 }
 
-                bool updated = await WebAPI.Modify.UpdateItemsAsync(gisWebAPIManager, table, countyIds_Valid, postOptions, key);
+                bool updated = await WebAPI.Modify.UpdateItemsAsync(gISWebAPIManager, table, countyIds_Valid, postOptions, key);
                 if (!updated)
                 {
                     Serilog.Modify.Log(Serilog.Enums.LogEventLevel.Error, "Year built predictions batch was not stored - counties {CountyIds}, buildings {Start}..{End}", string.Join(", ", countyIds_Valid), i, i + count - 1);
@@ -116,7 +116,7 @@ namespace DiGi.GIS.YOLO.UI
         /// Writes the year built detection features of a run into the stored building data through the Web API, for one explicitly identified county row.
         /// <para>Where a county is stored as several polygon parts, call the <see cref="IEnumerable{T}"/> overload with every part instead - naming one part files the whole batch there whether or not the buildings belong to it.</para>
         /// </summary>
-        /// <param name="gisWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
+        /// <param name="gISWebAPIManager">The <see cref="GISWebAPIManager"/> instance used to communicate with the WebAPI.</param>
         /// <param name="countyId">The identifier of the county row the buildings belong to.</param>
         /// <param name="building2DYearBuiltPredictions">The detections to write, one instance per building.</param>
         /// <param name="batchSize">The number of buildings sent in one request. Defaults to 5000.</param>
@@ -125,9 +125,9 @@ namespace DiGi.GIS.YOLO.UI
         /// <param name="references">The references the detector scored, detected or not. Null writes only the detected buildings.</param>
         /// <param name="years">The year range whose detection columns are replaced when <paramref name="references"/> are named. Null applies the scoring step's default range.</param>
         /// <returns>A task returning <see langword="true"/> when every batch was accepted; otherwise <see langword="false"/>.</returns>
-        public static async Task<bool> UpdateBuildingDataYearBuiltPredictionsAsync(this GISWebAPIManager? gisWebAPIManager, int countyId, IEnumerable<Building2DYearBuiltPredictions>? building2DYearBuiltPredictions, int batchSize = 5000, PostOptions? postOptions = null, string? key = null, IEnumerable<string>? references = null, Range<int>? years = null)
+        public static async Task<bool> UpdateBuildingDataYearBuiltPredictionsAsync(this GISWebAPIManager? gISWebAPIManager, int countyId, IEnumerable<Building2DYearBuiltPredictions>? building2DYearBuiltPredictions, int batchSize = 5000, PostOptions? postOptions = null, string? key = null, IEnumerable<string>? references = null, Range<int>? years = null)
         {
-            return await UpdateBuildingDataYearBuiltPredictionsAsync(gisWebAPIManager, [countyId], building2DYearBuiltPredictions, batchSize, postOptions, key, references, years);
+            return await UpdateBuildingDataYearBuiltPredictionsAsync(gISWebAPIManager, [countyId], building2DYearBuiltPredictions, batchSize, postOptions, key, references, years);
         }
     }
 }
